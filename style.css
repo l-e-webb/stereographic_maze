@@ -1,6 +1,7 @@
 body {
 	width: 800px;
 	height: 600px;
+	margin: auto;
 }
 
 #canvas {
@@ -9,4 +10,8 @@ body {
 	margin: 0px;
 	padding: 0px;
 	border: 1px solid #000;
+}
+
+#caption {
+	width: 100%;
 }
