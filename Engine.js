@@ -90,13 +90,13 @@
 		renderer.clear();
 
 		var center = new SphereVector();
-		for (var i = 1; i < 6; i++) {
+		for (var i = 1; i < 8; i++) {
 			center.set(0, PI);
 			center.rotate(rotationMatrix);
-			renderer.circle(center, i * PI / 6);
+			renderer.circle(center, i * PI / 8);
 		}
-		for (var i = 0; i < 4; i++) {
-			center.set(i * PI / 4, PI / 2);
+		for (var i = 0; i < 8; i++) {
+			center.set(i * PI / 8, PI / 2);
 			center.rotate(rotationMatrix);
 			renderer.circle(center, PI / 2);
 		}

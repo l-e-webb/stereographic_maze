@@ -160,7 +160,7 @@ SphereVector.prototype = {
 	},
 	rotate: function(m) {
 		var rotatedV3 = m.vectorMultiply(this.vector3());
-		this.set(Math.atan(rotatedV3[1] / (rotatedV3[0] || 0.0001)), Math.acos(rotatedV3[2]));
+		this.set(Math.atan2(rotatedV3[1], rotatedV3[0]), Math.acos(rotatedV3[2]));
 	},
 	vector3: function() {
 		return [
