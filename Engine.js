@@ -1,16 +1,31 @@
 //Engine that handles animation loop and controls.
+var maze;
+
 (function() {
 	var MAX_FPS = 60;
 	var FRAME_DURATION = 1000 / MAX_FPS;
+	var CONTROL_FREE = 0;
+	var CONTROL_TROPIC = 1;
+	var CONTROL_MAZE = 2;
+	var VIEW_GLOBE = 0;
+	var VIEW_MAZE = 1;
+	var MERIDIANS = 18;
+	var TROPICS = 15;
+	var LINE_WIDTH = 3;
+	var SCALE = 400;
 
 	//Radians per second
-	var ROTATION_SPEED = PI / 4;
+	var ROTATION_SPEED = PI / 8;
 
 	var canvas = document.getElementById("canvas");
 	var renderer = new StereographicRenderer(canvas.getContext("2d"));
 	var lastFrameTime = 0;
 	var needsRedraw = true;
 	var rotationMatrix = new Matrix3();
+	var controlScheme = CONTROL_MAZE;
+	var view = VIEW_MAZE;
+
+	//var maze;
 
 	var Key = {
 		_pressed: {},
@@ -19,6 +34,7 @@
 		UP: 38,
 		RIGHT: 39,
 		DOWN: 40,
+		R: 82,
 
 		isDown: function(keyCode) {
 			return this._pressed[keyCode];
@@ -26,6 +42,11 @@
 
 		onKeydown: function(event) {
 			this._pressed[event.keyCode] = true;
+			if (event.keyCode == this.R) {
+				rotationMatrix = new Matrix3();
+				needsRedraw = true;
+				console.log("Resetting");
+			}
 		},
 
 		onKeyup: function(event) {
@@ -35,6 +56,16 @@
 
 	window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
 	window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
+
+	function initialize() {
+		maze = new Maze(MERIDIANS, TROPICS);
+		maze.logMaze();
+		rotationMatrix = new Matrix3();
+		lastFrameTime = 0;
+		needsRedraw = true;
+		renderer.c.lineWidth = LINE_WIDTH;
+		renderer.scale = SCALE;
+	}
 
 	function mainLoop(timestamp) {
 		if (timestamp < lastFrameTime + FRAME_DURATION) {
@@ -52,33 +83,41 @@
 
 	function update(delta) {
 		renderer.update();
-		var zRot = 0;
-		var yRot = 0;
 		var rotation = ROTATION_SPEED * delta;
-		if (Key.isDown(Key.LEFT) && !Key.isDown(Key.RIGHT)) {
-			zRot = rotation;
+		var leftRight = 0;
+		var upDown = 0;
+		if (Key.isDown(Key.LEFT)) leftRight += 1;
+		if (Key.isDown(Key.RIGHT)) leftRight -= 1;
+		if (Key.isDown(Key.UP)) upDown -= 1;
+		if (Key.isDown(Key.DOWN)) upDown += 1;
+		if (!leftRight && !upDown) {
+			return;
 		}
-		if (Key.isDown(Key.RIGHT) && !Key.isDown(Key.LEFT)) {
-			zRot = -rotation;
+
+		needsRedraw = true;
+		leftRight *= rotation;
+		upDown *= rotation;
+
+		if (controlScheme == CONTROL_MAZE) {
+			maze.movePlayer(-leftRight, -upDown);
+			rotationMatrix = maze.getRotationMatrix();
+			return;
 		}
-		if (Key.isDown(Key.UP) && !Key.isDown(Key.DOWN)) {
-			yRot = rotation;
-		}
-		if (Key.isDown(Key.DOWN) && !Key.isDown(Key.UP)) {
-			yRot = -rotation;
-		}
-		if (yRot) {
-			var rY = Matrix3.Ry(yRot);
-			//Left multiply existing rotation matric by rX.
+
+		if (upDown) {
+			var rY = Matrix3.Ry(upDown);
+			//Left multiply existing rotation matric by rY.
 			rY.multiply(rotationMatrix);
 			rotationMatrix = rY;
-			needsRedraw = true;
 		}
-		if (zRot) {
-			var rZ = Matrix3.Rz(zRot);
-			rZ.multiply(rotationMatrix);
-			rotationMatrix = rZ;
-			needsRedraw = true;
+		if (leftRight) {
+			var rZ = Matrix3.Rz(leftRight);
+			if (controlScheme == CONTROL_FREE) {
+				rZ.multiply(rotationMatrix);
+				rotationMatrix = rZ;
+			} else {
+				rotationMatrix.multiply(rZ);
+			}
 		}
 	}
 
@@ -86,23 +125,16 @@
 		if (!needsRedraw) {
 			return;
 		}
-
 		renderer.clear();
-
-		var center = new SphereVector();
-		for (var i = 1; i < 8; i++) {
-			center.set(0, PI);
-			center.rotate(rotationMatrix);
-			renderer.circle(center, i * PI / 8);
-		}
-		for (var i = 0; i < 8; i++) {
-			center.set(i * PI / 8, PI / 2);
-			center.rotate(rotationMatrix);
-			renderer.circle(center, PI / 2);
+		if (view = VIEW_MAZE) {
+			renderer.renderMaze(maze, rotationMatrix);
+		} else if (view = VIEW_GLOBE) {
+			renderer.renderGlobe(MERIDIANS, TROPICS);
 		}
 		needsRedraw = false;
 	}
 
 	//Start:
+	initialize();
 	requestAnimationFrame(mainLoop);
 })();

@@ -149,16 +149,10 @@ SphereVector.prototype = {
 	move: function(thetaR, phiR) {
 		this.theta += thetaR;
 		this.phi += phiR;
-		if (this.phi < 0) {
-			this.phi *= -1;
-			this.theta += PI;
-		} else if (this.phi > PI) {
-			this.phi = TAU - this.phi;
-			this.theta += PI;
-		}
-		this.theta = this.theta % TAU;
+		this.reorient();
 	},
 	rotate: function(m) {
+		if (m.identity()) return;
 		var rotatedV3 = m.vectorMultiply(this.vector3());
 		this.set(Math.atan2(rotatedV3[1], rotatedV3[0]), Math.acos(rotatedV3[2]));
 	},
@@ -171,14 +165,38 @@ SphereVector.prototype = {
 	},
 	project: function() {
 		//Small phi values cause problemos.
-		var phi = Math.max(0.00001, this.phi);
+		var phi = Math.max(0.01, this.phi);
 		var r = Math.sin(phi) / (1 - Math.cos(phi));
 		//console.log("Projecting " + this.toString() + " to (" + r + ", " + this.theta + ")");
 		return new Vector2(r * Math.sin(this.theta), r * Math.cos(this.theta));
 	},
 	set: function(theta, phi) {
+		if (theta instanceof SphereVector) {
+			this.set(theta.theta, theta.phi);
+			return;
+		}
 		this.theta = theta;
 		this.phi = phi;
+		this.reorient();
+	},
+	pseudodistance: function(theta, phi) {
+		if (theta instanceof SphereVector) {
+			return this.pseudodistance(theta.theta, theta.phi);
+		}
+		return Math.abs(this.phi - phi) + 
+			Math.modDifference(this.theta, theta, TAU);
+	},
+	reorient: function() {
+		if (this.phi < 0) {
+			this.phi *= -1;
+			this.theta += PI;
+		}
+		if (this.phi > PI) {
+			this.phi = TAU - this.phi;
+			this.theta += PI;
+		}
+		this.theta = this.theta % TAU;
+		if (this.theta < 0) this.theta += TAU;
 	},
 	toString: function() {
 		return "(" + this.theta + ", " + this.phi + ")";
@@ -194,6 +212,21 @@ function Matrix3(row1, row2, row3) {
 };
 Matrix3.prototype = Object.create(Matrix3);
 Matrix3.prototype.constructor = Matrix3;
+
+Matrix3.identity = new Matrix3();
+
+Matrix3.prototype.equals = function(m) {
+	for (i = 0; i < 3; i++) {
+		for (j = 0; j < 3; j++) {
+			if (this[i][j] != m[i][j]) return false;
+		}
+	}
+	return true;
+};
+
+Matrix3.prototype.identity = function() {
+	return this.equals(Matrix3.identity);
+};
 
 Matrix3.prototype.multiply = function(m) {
 	var row1 = [
@@ -249,4 +282,16 @@ Matrix3.Rz = function(theta) {
 	var row2 = [sin, cos, 0];
 	var row3 = [0, 0, 1];
 	return new Matrix3(row1, row2, row3);
+};
+
+Math.clamp = function(n, min, max) {
+	return Math.max(min, Math.min(n, max));
+};
+
+Math.modDifference = function(a, b, n) {
+	return Math.min(
+		Math.abs(a - b),
+		Math.abs(a + n - b),
+		Math.abs(a - n - b)
+	);
 };

@@ -3,19 +3,19 @@
 
 function StereographicRenderer(context) {
 	this.c = context;
-	this.scale = 100;
-	this.v1 = new Vector2();
-	this.v2 = new Vector2();
-	this.sv1 = new SphereVector();
-	this.sv2 = new SphereVector();
+	this.scale = 250;
 	this.update();
 }
 StereographicRenderer.prototype = Object.create(StereographicRenderer);
 StereographicRenderer.prototype.constructor = StereographicRenderer;
 
+StereographicRenderer.CENTER_DISTANCE_CAP = 10000;
+StereographicRenderer.POINT_RADIUS = 4;
+
 StereographicRenderer.prototype.update = function() {
 	this.xoffset = this.c.canvas.width / 2;
 	this.yoffset = this.c.canvas.height / 2;
+	scale = (this.c.canvas.width / 2.0);
 };
 
 StereographicRenderer.prototype.clear = function() {
@@ -23,36 +23,158 @@ StereographicRenderer.prototype.clear = function() {
 };
 
 StereographicRenderer.prototype.circle = function(center, radius) {
-	this.sv1.set(center.theta, center.phi);
+	var diameterEndpoint1 = new SphereVector();
+	var diameterEndpoint2 = new SphereVector();
 	//console.log("Center (sphere): " + this.sv1.toString() + ", radius: " + radius);
-	this.sv1.move(0, radius);
-	this.sv2.set(center.theta, center.phi);
-	this.sv2.move(0, -radius);
+	diameterEndpoint1.set(center);
+	diameterEndpoint2.set(center)
+	diameterEndpoint1.move(0, radius);
+	diameterEndpoint2.move(0, -radius);
 	//console.log("Diametric points (sphere): " + this.sv1.toString() + " and " + this.sv2.toString());
 
-	var v1 = this.sv1.project();
-	var v2 = this.sv2.project();
+	var planarEndpoint1 = diameterEndpoint1.project();
+	var planarEndpoint2 = diameterEndpoint2.project();
 	//console.log("Diametric points (plane): " + v1.toString() + " and " + v2.toString());
-	this.v1.set((v1.x + v2.x) / 2, (v1.y + v2.y) / 2);
+	var center = new Vector2((v1.x + v2.x) / 2, (v1.y + v2.y) / 2);
 	//console.log("Center (plane): " + this.v1.toString());
-	this.planarCircle(this.v1.x, this.v1.y, this.v1.distance(v1));
+	this.planarCircle(center.x, center.y, center.distance(planarEndpoint1));
 };
 
-StereographicRenderer.prototype.planarArc = function(cx, cy, x1, y1, x2, y2) {
-	this.v1.set(x1 - cx, y1 - cy);
-	this.v2.set(x2 - cx, y2 - cy);
-	var angle1 = this.v1.toAngles();
-	var angle2 = this.v2.toAngles();
-	var radius = this.v1.length();
+StereographicRenderer.prototype.arc = function(center, radius, point1, point2, midpoint) {
+	var diameterEndpoint1 = new SphereVector();
+	var diameterEndpoint2 = new SphereVector()
+	diameterEndpoint1.set(center);
+	diameterEndpoint1.move(0, radius);
+	diameterEndpoint2.set(center);
+	diameterEndpoint2.move(0, -radius);
+	var planarDEndpoint1 = diameterEndpoint1.project();
+	var planarDEndpoint2 = diameterEndpoint2.project();
+	var planarCenter = planarDEndpoint1.add(planarDEndpoint2).multiply(0.5);
 
+	var arcEndpoint1 = point1.project();
+	var arcEndpoint2 = point2.project();
+	var arcMidpoint = midpoint.project();
+	var radius = planarCenter.distance(arcEndpoint1);
+
+	//Check to see if the three points are roughly colinear.
+	var startToMidpointAngle = arcEndpoint1.angleTo(arcMidpoint);
+	var midToEndAngle = arcMidpoint.angleTo(arcEndpoint2);
+	var endpoint1Angle = arcEndpoint1.toAngles();
+	var endpoint2Angle = arcEndpoint2.toAngles();
+	if (Math.abs(startToMidpointAngle) < 0.02 && Math.abs(midToEndAngle) < 0.02) {
+		//&& Math.abs(endpoint1Angle - endpoint2Angle) < PI / 2) {
+		//If the three points are roughly colinear, and within a quadrant, draw
+		//straight lines.
+		this.planarLine(arcEndpoint1.x, arcEndpoint1.y, arcMidpoint.x, arcMidpoint.y);
+		this.planarLine(arcMidpoint.x, arcMidpoint.y, arcEndpoint2.x, arcEndpoint2.y);
+		return;
+	}
+
+	//Convert to local coordinates at planar center.
+	arcEndpoint1.subtract(planarCenter);
+	arcEndpoint2.subtract(planarCenter);
+	arcMidpoint.subtract(planarCenter);
+	var startAngle = arcEndpoint1.toAngles();
+	var endAngle = arcEndpoint2.toAngles();
+	var midpointAngle = arcMidpoint.toAngles();
+	var swap;
+	//Check to see which arc between the two points contains the midpoint.
+	if (startAngle > endAngle) {
+		if (midpointAngle > startAngle || midpointAngle < endAngle) {
+			//Do nothing.
+		} else {
+			swap = startAngle;
+			startAngle = endAngle;
+			endAngle = swap;
+		}
+	} else {
+		if (midpointAngle > endAngle || midpointAngle < startAngle) {
+			swap = startAngle;
+			startAngle = endAngle;
+			endAngle = swap;
+		} else {
+			//Do nothing
+		}
+	}
+	this.planarArc(planarCenter.x, planarCenter.y, radius, startAngle, endAngle);
+};
+
+StereographicRenderer.prototype.point = function(point) {
+	var planarPoint = point.project();
+	this.planarPoint(planarPoint.x, planarPoint.y);
+};
+
+StereographicRenderer.prototype.planarCircle = function(cx, cy, radius, filled) {
+	this.c.beginPath();
+	this.c.arc(this.scale * cx + this.xoffset, this.scale * cy + this.yoffset, this.scale * radius, 0, TAU);
+	this.c.stroke();
+	if (filled) this.c.fill();
+	//console.log("Circle at: (" + (this.scale * cx + this.xoffset) + ", " + (this.scale * cy + this.yoffset) + ") of radius " + this.scale * radius);
+};
+
+StereographicRenderer.prototype.planarArc = function(cx, cy, radius, angle1, angle2) {
 	this.c.beginPath();
 	this.c.arc(this.scale * cx + this.xoffset, this.scale * cy + this.yoffset, this.scale * radius, angle1, angle2);
 	this.c.stroke();
 };
 
-StereographicRenderer.prototype.planarCircle = function(cx, cy, radius) {
+StereographicRenderer.prototype.planarLine = function(x1, y1, x2, y2) {
 	this.c.beginPath();
-	this.c.arc(this.scale * cx + this.xoffset, this.scale * cy + this.yoffset, this.scale * radius, 0, TAU);
+	this.c.moveTo(x1 * this.scale + this.xoffset, y1 * this.scale + this.yoffset);
+	this.c.lineTo(x2 * this.scale + this.xoffset, y2 * this.scale + this.yoffset);
 	this.c.stroke();
-	//console.log("Circle at: (" + (this.scale * cx + this.xoffset) + ", " + (this.scale * cy + this.yoffset) + ") of radius " + this.scale * radius);
+};
+
+StereographicRenderer.prototype.planarPoint = function(x1, y1) {
+	this.planarCircle(x1, y1, StereographicRenderer.POINT_RADIUS / this.scale, true);
+};
+
+StereographicRenderer.prototype.renderGlobe = function(meridians, tropics, rotationMatrix) {
+	var center = new SphereVector();
+	for (var i = 1; i < tropics; i++) {
+		center.set(0, PI);
+		center.rotate(rotationMatrix);
+		this.circle(center, i * PI / tropics);
+	}
+	for (var i = 0; i < meridians; i++) {
+		center.set(i * PI / meridians, PI / 2);
+		center.rotate(rotationMatrix);
+		this.circle(center, PI / 2);
+	}
+};
+
+StereographicRenderer.prototype.renderMaze = function(maze, rotationMatrix) {
+	var center = new SphereVector();
+	var point1 = new SphereVector();
+	var point2 = new SphereVector();
+	var point3 = new SphereVector();
+	var radius;
+	for (var i = 0; i < maze.edges.length; i++) {
+		var edge = maze.edges[i];
+		if (!edge.present) continue;
+		point1.set(edge.node1.position);
+		point2.set(edge.node2.position);
+		point3.set(edge.midpoint);
+		if (edge.type == Edge.MERIDIAN) {
+			center.set(edge.node1.position.theta, PI / 2);
+			center.move(PI / 2, 0);
+			radius = PI / 2;
+		} else if (edge.type == Edge.TROPIC) {
+			center.set(0, PI);
+			radius = PI - edge.node1.position.phi;
+		} else {
+			continue;
+		}
+		center.rotate(rotationMatrix);
+		point1.rotate(rotationMatrix);
+		point2.rotate(rotationMatrix);
+		point3.rotate(rotationMatrix)
+		this.arc(center, radius, point1, point2, point3);
+	}
+	center.set(maze.playerPosition);
+	center.rotate(rotationMatrix);
+	this.point(center);
+	center.set(0, 0);
+	center.rotate(rotationMatrix);
+	this.point(center);
 };
