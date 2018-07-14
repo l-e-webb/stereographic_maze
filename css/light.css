@@ -1,0 +1,13 @@
+body {
+	color: black;
+	background-color: white;
+}
+
+#canvas {
+	border-color: black;
+}
+
+.uiBox {
+	background-color: white;
+	border-color: black;
+}

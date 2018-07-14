@@ -2,7 +2,10 @@
 <html>
 <head>
   <title>Stereographic Maze</title>
-  <link rel="stylesheet" type="text/css" href="style.css" />
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
+  <link id="lightSheet" rel="stylesheet" type="text/css" href="css/light.css" />
+  <link id="darkSheet" rel="stylesheet alternate" type="text/css" href="css/dark.css" />
+  <link id="cyberSheet" rel="stylesheet alternate" type="text/css" href="css/cyber.css" />
   <meta property="og:image" content="img/stereographic_projection.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="497">
@@ -13,11 +16,41 @@
 </head>
 <body>
   <canvas width="960px" height="720px" id="canvas"></canvas>
-  <div id="caption">
-  	<p>
-  		Hint: use the arrow keys.
-  	</p>
+  <div id="title">Stereographic Maze</div>
+  <div id="menu" class="uiBox">
+  	<button id="playButton">Play!</button>
+  	<div class="selectorRow" id="difficultySelectRow">
+  		Difficulty: <select id="difficultySelect">
+  			<option value="easy">Easy</option>
+  			<option value="medium">Medium</option>
+  			<option value="hard">Hard</option>
+  		</select>
+	</div>
+	<div class="selectorRow" id="skinSelectRow">
+		Skin: <select id="skinSelect">
+			<option value="light">Light</option>
+			<option value="dark">Dark</option>
+			<option value="cyber">Cyber</option>
+		</select>
+	</div>
+	<button id="aboutButton">About</button>
   </div>
+  <div id="aboutWindow" class="uiBox">
+    <h1>Stereographic Maze</h1>
+    <p>
+      <em>Stereographic Maze</em> is a simple math visualization / puzzle game. You are navigating a maze on the surface of a sphere, but the maze is being visualized on the plane via <a href="https://wikipedia.org/wiki/Stereographic_projection" target="_blank">stereographic projection</a>. Simply put, stereographic projection is a way of forming a 2D map from a sphere by projecting along lines from the north pole to a plane that passes through the equator. Under stereographic projection, the southern hemisphere appears in a circle in the middle of the plane, and the northern hemisphere is the entire remainder of the plane, stretching off infinitely in every direction, with the north pole itself being lost in the infinite distance.
+    </p>
+    <p>
+      In <em>Stereographic Maze</em>, our intrepid player (a dot) starts on the south pole, and must find its way to the north pole (also a dot). Use the arrow keys to move along the surface of the sphere to eventually reach the north pole; or, more accurately, use the arrow keys to rotate the entire sphere to get the original north pole to the center of the screen.
+    </p>
+    <p>
+      <em>Stereographic Maze</em> is still in development, so forgive the occasional bug. You can view the source code yourself <a href="https://github.com/l-e-webb/stereographic_maze" target="_blank">here</a>.
+    </p>
+    <p>
+      Created by <a href="https://itch.io/tangledwebgames" target="_blank">Louis Webb</a>, distributed under Creative Commons license <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode" target="_blank">Attribution-NonCommercial-ShareAlike 4.0</a>. Feel free to share for non-commercial purposes, with attribution.
+    </p>
+    <button id="closeAboutButton">Return</button>
 </body>
+<script src="UiController.js"></script>
 <script src="Engine.js"></script>
 </html>

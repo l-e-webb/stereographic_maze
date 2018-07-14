@@ -1,21 +1,35 @@
 //Maze
 
-function Maze(meridians, tropics) {
-	this.meridians = meridians;
-	this.tropics = tropics;
+function Maze(difficulty) {
+
+	var difficultySettings;
+	switch (difficulty) {
+		case "easy":
+			difficultySettings = Maze.EASY;
+			break;
+		case "medium":
+			difficultySettings = Maze.MEDIUM;
+			break;
+		case "hard":
+			difficultySettings = Maze.HARD;
+			break;
+	}
+
+	this.meridians = difficultySettings.meridians;
+	this.tropics = difficultySettings.tropics;
 	this.northPole = new Node(0, 0);
 	this.southPole = new Node(0, PI);
 	this.nodes = [];
 
 	//Create node array
 	var thetaAngles =[];
-	for (var i = 0; i < meridians; i++) {
-		thetaAngles[i] = i * 2 * PI / meridians;
+	for (var i = 0; i < this.meridians; i++) {
+		thetaAngles[i] = i * 2 * PI / this.meridians;
 	}
-	for (var i = 1; i <= tropics; i++) {
-		var tropicPhi = i * PI / (tropics + 1);
+	for (var i = 1; i <= this.tropics; i++) {
+		var tropicPhi = i * PI / (this.tropics + 1);
 		this.nodes[i] = [];
-		for (var j = 0; j < meridians; j++) {
+		for (var j = 0; j < this.meridians; j++) {
 			this.nodes[i].push(new Node(thetaAngles[j], tropicPhi));
 		}
 	}
@@ -27,15 +41,15 @@ function Maze(meridians, tropics) {
 	this.northPole.south = northPoleEdge;
 	this.nodes[1][0].north = northPoleEdge;
 	this.edges.push(northPoleEdge);
-	var southPoleEdge = new Edge(this.nodes[tropics][0], this.southPole);
+	var southPoleEdge = new Edge(this.nodes[this.tropics][0], this.southPole);
 	this.southPole.north = southPoleEdge;
-	this.nodes[tropics][0].south = southPoleEdge;
+	this.nodes[this.tropics][0].south = southPoleEdge;
 	this.edges.push(southPoleEdge);
 	//Add east/west edges.
-	for (var i = 1; i <= tropics; i++) {
-		for (var j = 0; j < meridians; j++) {
+	for (var i = 1; i <= this.tropics; i++) {
+		for (var j = 0; j < this.meridians; j++) {
 			var node1 = this.nodes[i][j];
-			var node2 = this.nodes[i][(j + 1) % meridians];
+			var node2 = this.nodes[i][(j + 1) % this.meridians];
 			var edge = new Edge(node1, node2);
 			node1.east = edge;
 			node2.west = edge;
@@ -43,8 +57,8 @@ function Maze(meridians, tropics) {
 		}
 	}
 	//Add north/south edges.
-	for (var j = 0; j < meridians; j++) {
-		for (var i = 1; i < tropics; i++) {
+	for (var j = 0; j < this.meridians; j++) {
+		for (var i = 1; i < this.tropics; i++) {
 			var node1 = this.nodes[i][j];
 			var node2 = this.nodes[(i + 1)][j];
 			var edge = new Edge(node1, node2);
@@ -74,6 +88,25 @@ function Maze(meridians, tropics) {
 		}
 	}
 
+	//Complete equator
+	if (difficultySettings.completeEquator) {
+		var equatorIndex = Math.ceil(this.tropics / 2);
+		for (var j = 0; j < this.meridians; j++) {
+			var equatorNode = this.nodes[equatorIndex][j];
+			equatorNode.east.present = true;
+			equatorNode.west.present = true;
+		}
+	}
+
+	var addedEdges = 0;
+	while (addedEdges < difficultySettings.randomlyAddEdges) {
+		var edge = this.edges[Math.floor(Math.random() * this.edges.length)];
+		if (!edge.present) {
+			edge.present = true;
+			addedEdges++;
+		}
+	}
+
 	this.playerPosition = new SphereVector(0, PI - 0.01);
 }
 Maze.prototype = Object.create(Maze);
@@ -89,6 +122,7 @@ Maze.prototype.getRotationMatrix = function() {
 };
 
 Maze.prototype.movePlayer = function(leftRight, upDown) {
+	leftRight *= this.getTropicRotationFactor();
 	if (upDown + this.playerPosition.phi > PI ||
 		upDown + this.playerPosition.phi < 0) upDown = 0;
 	this.playerPosition.move(leftRight, upDown);
@@ -132,6 +166,12 @@ Maze.prototype.snapToEdge = function() {
 			snapEdge.constantAngle + 0.0001
 		);
 	}
+};
+
+//Tropic rotation should be faster closer to the poles to maintain constant
+//linear velocity on the surface where the player is.
+Maze.prototype.getTropicRotationFactor = function() {
+	return 1 / Math.sqrt(Math.sin(this.playerPosition.phi));
 };
 
 Maze.prototype.logMaze = function() {
@@ -274,3 +314,22 @@ Edge.MERIDIAN = 0;
 Edge.TROPIC = 1;
 Edge.OTHER = 2;
 Edge.ENDPOINT_PROXIMITY = 0.01;
+
+Maze.EASY = {
+	"meridians": 10,
+	"tropics": 7,
+	"completeEquator": true,
+	"randomlyAddEdges": 5
+};
+Maze.MEDIUM = {
+	"meridians": 12,
+	"tropics": 9,
+	"completeEquator": true,
+	"randomlyAddEdges": 3
+};
+Maze.HARD = {
+	"meridians": 14,
+	"tropics": 11,
+	"completeEquator": false,
+	"randomlyAddEdges": 0
+};

@@ -1,0 +1,25 @@
+body {
+	color: aqua;
+	background-color: black;
+}
+
+#canvas {
+	border-color: aqua;
+}
+
+.uiBox {
+	border-color: aqua;
+	background-color: black;
+}
+
+a:link, a:hover, a:visited {
+	color: aquamarine;
+}
+
+a:hover, a:active {
+	text-shadow: 1px 1px aquamarine;
+}
+
+a:active {
+	color: azure;
+}

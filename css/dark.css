@@ -1,0 +1,25 @@
+body {
+	color: white;
+	background-color: black;
+}
+
+#canvas {
+	border-color: white;
+}
+
+.uiBox {
+	border-color: white;
+	background-color: black;
+}
+
+a:link, a:hover, a:visited {
+	color: aqua;
+}
+
+a:hover, a:active {
+	text-shadow: 1px 1px aqua;
+}
+
+a:active {
+	color: white;
+}
