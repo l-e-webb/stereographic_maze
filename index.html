@@ -27,7 +27,7 @@
   		</select>
 	  </div>
 	  <div class="selectorRow" id="skinSelectRow">
-		Skin: <select id="skinSelect">
+		Color scheme: <select id="skinSelect">
 			<option value="light">Light</option>
 			<option value="dark">Dark</option>
 			<option value="cyber">Cyber</option>
@@ -53,10 +53,10 @@
   <div id="aboutBox" class="uiBox">
     <h1>Stereographic Maze</h1>
     <p>
-      <em>Stereographic Maze</em> is a simple math visualization / puzzle game. You are navigating a maze on the surface of a sphere, but the maze is being visualized on the plane via <a href="https://wikipedia.org/wiki/Stereographic_projection" target="_blank">stereographic projection</a>. Simply put, stereographic projection is a way of forming a 2D map from a sphere by projecting along lines from the north pole to a plane that passes through the equator. Under stereographic projection, the southern hemisphere appears in a circle in the middle of the plane, and the northern hemisphere is the entire remainder of the plane, stretching off infinitely in every direction, with the north pole itself being lost in the infinite distance.
+      <em>Stereographic Maze</em> is part math visualization, part puzzle game. You are navigating a maze on the surface of a sphere, but the maze is being visualized on the screen via <a href="https://wikipedia.org/wiki/Stereographic_projection" target="_blank">stereographic projection</a>---a method for mapping the surface of the sphere onto a flat plane. Imagine a globe with a 2D plane bisecting it at the equator. If you draw a line at any downward angle from the north pole, it will pass through the surface of the sphere once, and through the equatorial plane once.  Project each point on the sphere along that line onto the equatorial plane and you've got a stereographic projection. The southern hemisphere is mapped to a circle in the center of the plane, and the northern hemisphere is mapped to the entire remainder of the plane, with the north pole itself being lost in the infinite distance.
     </p>
     <p>
-      In <em>Stereographic Maze</em>, our intrepid player (a dot) starts on the south pole, and must find its way to the north pole (also a dot). Use the arrow keys to move along the surface of the sphere to eventually reach the north pole; or, more accurately, use the arrow keys to rotate the entire sphere to get the original north pole to the center of the screen.
+      In <em>Stereographic Maze</em>, our intrepid player (a dot) starts on the south pole (which is in the center of the screen), and must find its way to the north pole (marked by a modulating circle). Use the arrow keys to move along the surface of the sphere to eventually reach the north pole; or, more accurately, use the arrow keys to rotate the entire sphere to flip it upside down, getting the original north pole to be the south pole.
     </p>
     <p>
       <em>Stereographic Maze</em> is still in development, so forgive the occasional bug. You can view the source code yourself <a href="https://github.com/l-e-webb/stereographic_maze" target="_blank">here</a>.

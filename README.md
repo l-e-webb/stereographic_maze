@@ -1,11 +1,9 @@
 # Stereographic Maze
 
-Stereographic Maze is part math visualization, part simple puzzle game. Navigate a maze on the surface of the sphere, with the maze viewed in the plane via [stereographic projection](https://en.wikipedia.org/wiki/Stereographic_projection). You start at the south pole. The goal is to reach the north pole, which is marked with a dot.
+*Stereographic Maze* is part math visualization, part puzzle game. You are navigating a maze on the surface of a sphere, but the maze is being visualized on the screen via [stereographic projection](https://wikipedia.org/wiki/Stereographic_projection)---a method for mapping the surface of the sphere onto a flat plane. Imagine a globe with a 2D plane bisecting it at the equator. If you draw a line at any downward angle from the north pole, it will pass through the surface of the sphere once, and through the equatorial plane once.  Project each point on the sphere along that line onto the equatorial plane and you've got a stereographic projection. The southern hemisphere is mapped to a circle in the center of the plane, and the northern hemisphere is mapped to the entire remainder of the plane, with the north pole itself being lost in the infinite distance.
+    
+In *Stereographic Maze*, our intrepid player (a dot) starts on the south pole (which is in the center of the screen), and must find its way to the north pole (marked by a modulating circle). Use the arrow keys to move along the surface of the sphere to eventually reach the north pole; or, more accurately, use the arrow keys to rotate the entire sphere to flip it upside down, getting the original north pole to be the south pole.
 
-The current version is a prototype. Features coming soon:
-* Multiple difficulty levels
-* Multiple UI skins with more dynamic visual renditions of the maze
-* Better UI for marking starting position, current position, and goal
-* A menu screen where you select difficulty, UI skin, etc.
+*Stereographic Maze* is still in development, so forgive the occasional bug!
 
 Created by [Louis Webb](https://tangledwebgames.itch.io) licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-nc-sa/4.0/). Feel free to share for non-commercial purposes with attribution.
