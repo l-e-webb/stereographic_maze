@@ -1,7 +1,9 @@
 body {
-	width: 960px;
-	height: 720px;
-	margin: auto;
+	width: 99%;
+	height: 98vh;
+	min-width: 960px;
+	min-height: 720px;
+	font-family: "Courier", monospace;
 }
 
 @font-face {
@@ -15,15 +17,33 @@ body {
 }
 
 .button {
-	width: 50px;
+	width: 100px;
 	padding: 5px;
+
+}
+
+.uiBox {
+	border-radius: 15px;
+	border: 1px solid;
+	padding: 15px;
+	z-index: 1;
+}
+
+.inGameBox {
+	position: absolute;
+	top: 25%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
 #canvas {
-	width: 960px;
-	height: 720px;
-	border: 1px solid;
+	min-width: 960px;
+	min-height: 720px;
 	position: absolute;
+	border: 1px solid;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 	z-index: 0;
 }
 
@@ -32,33 +52,31 @@ body {
 	margin: auto;
 	width: 60%;
 	font-size: 48pt;
-	position: relative;
+	position: absolute;
 	text-align: center;
 	z-index: 1;
-	transform: translateY(100%);
+	top: 25%;
+	left: 50%;
+	transform: translateX(-50%);
 }
 
 #menu {
 	width: 250px;
 	margin: auto;
-	border: 1px solid;
-	position: relative;
-	z-index: 1;
-	padding: 15px;
+	position: absolute;
 	text-align: center;
-	transform: translateY(150%);
+	top: 75%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
-#aboutWindow {
+#aboutBox {
 	width: 500px;
 	margin: 0;
-	border: 1px solid;
 	position: absolute;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	z-index: 1;
-	padding: 15px;
 }
 
 #closeAboutButton {

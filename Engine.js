@@ -21,13 +21,14 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 	var ROTATION_SPEED = PI / 6;
 
 	var lastFrameTime = 0;
-	var needsRedraw = true;
 	var rotationMatrix = new Matrix3();
 	var controlScheme;
 	var view;
 	var autoControlTimer;
 	var autoLeftRight;
 	var autoUpDown;
+	var paused = false;
+	var inGame = false;
 
 	var Key = {
 		_pressed: {},
@@ -36,7 +37,8 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 		UP: 38,
 		RIGHT: 39,
 		DOWN: 40,
-		R: 82,
+		ESC: 27,
+		SPACE: 32,
 
 		isDown: function(keyCode) {
 			return this._pressed[keyCode];
@@ -44,9 +46,11 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 
 		onKeydown: function(event) {
 			this._pressed[event.keyCode] = true;
-			if (event.keyCode == this.R) {
-				initializeMenuScreen();
-				console.log("Resetting");
+			if (inGame &&
+					(event.keyCode == this.ESC 
+					|| event.keyCode == this.SPACE)) {
+				if (!paused) pause(); else unpause();
+
 			}
 		},
 
@@ -58,7 +62,7 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 	window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
 	window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
-	function initializeMenuScreen() {
+	function menuScreen() {
 		view = VIEW_GLOBE;
 		controlScheme = CONTROL_FREE_AUTO;
 		lastFrameTime = 0;
@@ -67,18 +71,47 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 		autoLeftRight = 0;
 		autoUpDown = 1;
 		renderer.scale = SCALE;
+		UiController.hideAll();
 		UiController.showMenu();
+		paused = false;
+		inGame = false;
 	}
 
 	function initializeMaze() {
 		maze = new Maze(UiController.getDifficultySelection());
 		rotationMatrix = new Matrix3();
 		lastFrameTime = 0;
-		needsRedraw = true;
+		renderer.needsRedraw = true;
 		renderer.scale = SCALE;
 		controlScheme = CONTROL_MAZE;
 		view = VIEW_MAZE;
-		UiController.hideMenu();
+		UiController.hideAll();
+		paused = false;
+		inGame = true;
+	}
+
+	function win() {
+		paused = true;
+		UiController.showWinBox();
+	}
+
+	function pause() {
+		UiController.hideAll();
+		UiController.showPauseMenu();
+		paused = true;
+	}
+
+	function unpause() {
+		UiController.hideAll();
+		paused = false;
+	}
+
+	function initializeUiFunctions() {
+		UiController.playButton.onclick = initializeMaze;
+		UiController.playAgainButton.onclick = initializeMaze;
+		UiController.winBoxReturnToMenuButton.onclick = menuScreen;
+		UiController.pauseMenuReturnToMenuButton.onclick = menuScreen;
+		UiController.continueButton.onclick = unpause;
 	}
 
 	function mainLoop(timestamp) {
@@ -89,14 +122,17 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 
 		var delta = (timestamp - lastFrameTime) / 1000;
 		lastFrameTime = timestamp;
-		update(delta);
-		draw(delta);
+
+		if (!paused) {
+			update(delta);
+			draw(delta);
+		}
 
 		requestAnimationFrame(mainLoop);
 	}
 
 	function update(delta) {
-		renderer.update();
+		renderer.update(delta);
 
 		var rotation = ROTATION_SPEED * delta;
 		var leftRight = 0;
@@ -119,13 +155,16 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 			return;
 		}
 
-		needsRedraw = true;
+		renderer.needsRedraw = true;
 		leftRight *= rotation;
 		upDown *= rotation;
 
 		if (controlScheme == CONTROL_MAZE) {
 			maze.movePlayer(-leftRight, -upDown);
 			rotationMatrix = maze.getRotationMatrix();
+			if (inGame && maze.isWin()) {
+				win();
+			}
 			return;
 		}
 
@@ -147,7 +186,7 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 	}
 
 	function draw() {
-		if (!needsRedraw) {
+		if (!renderer.needsRedraw) {
 			return;
 		}
 		renderer.clear();
@@ -156,7 +195,7 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 		} else if (view == VIEW_GLOBE) {
 			renderer.renderGlobe(MERIDIANS, TROPICS, rotationMatrix);
 		}
-		needsRedraw = false;
+		renderer.needsRedraw = false;
 	}
 
 	function playerControlled() {
@@ -206,7 +245,7 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 	}
 
 	//Start:
-	UiController.setPlayButtonListener(initializeMaze);
-	initializeMenuScreen();
+	initializeUiFunctions();
+	menuScreen();
 	requestAnimationFrame(mainLoop);
 })();

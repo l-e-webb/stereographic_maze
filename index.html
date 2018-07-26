@@ -15,7 +15,7 @@
   <script src="Maze.js"></script>
 </head>
 <body>
-  <canvas width="960px" height="720px" id="canvas"></canvas>
+  <canvas id="canvas"></canvas>
   <div id="title">Stereographic Maze</div>
   <div id="menu" class="uiBox">
   	<button id="playButton">Play!</button>
@@ -25,17 +25,32 @@
   			<option value="medium">Medium</option>
   			<option value="hard">Hard</option>
   		</select>
-	</div>
-	<div class="selectorRow" id="skinSelectRow">
+	  </div>
+	  <div class="selectorRow" id="skinSelectRow">
 		Skin: <select id="skinSelect">
 			<option value="light">Light</option>
 			<option value="dark">Dark</option>
 			<option value="cyber">Cyber</option>
 		</select>
-	</div>
-	<button id="aboutButton">About</button>
+	  </div>
+	  <button id="aboutButton">About</button>
   </div>
-  <div id="aboutWindow" class="uiBox">
+  <div id="pauseMenu" class="uiBox inGameBox">
+    <p>Paused...</p>
+    <span>
+      <button id="continueButton">Continue</button>
+      <button id="pauseMenuReturnToMenuButton">Return to menu</button>
+  </div>
+  <div id="winBox" class="uiBox inGameBox">
+    <p>
+      You win!
+    </p>
+    <span>
+      <button id="playAgainButton">Play again</button>
+      <button id="winBoxReturnToMenuButton">Return to menu</button>
+    </span>
+  </div>
+  <div id="aboutBox" class="uiBox">
     <h1>Stereographic Maze</h1>
     <p>
       <em>Stereographic Maze</em> is a simple math visualization / puzzle game. You are navigating a maze on the surface of a sphere, but the maze is being visualized on the plane via <a href="https://wikipedia.org/wiki/Stereographic_projection" target="_blank">stereographic projection</a>. Simply put, stereographic projection is a way of forming a 2D map from a sphere by projecting along lines from the north pole to a plane that passes through the equator. Under stereographic projection, the southern hemisphere appears in a circle in the middle of the plane, and the northern hemisphere is the entire remainder of the plane, stretching off infinitely in every direction, with the north pole itself being lost in the infinite distance.
@@ -50,6 +65,7 @@
       Created by <a href="https://itch.io/tangledwebgames" target="_blank">Louis Webb</a>, distributed under Creative Commons license <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode" target="_blank">Attribution-NonCommercial-ShareAlike 4.0</a>. Feel free to share for non-commercial purposes, with attribution.
     </p>
     <button id="closeAboutButton">Return</button>
+  </div>
 </body>
 <script src="UiController.js"></script>
 <script src="Engine.js"></script>

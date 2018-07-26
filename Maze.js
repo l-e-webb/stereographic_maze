@@ -111,6 +111,7 @@ function Maze(difficulty) {
 }
 Maze.prototype = Object.create(Maze);
 Maze.prototype.constructor = Maze;
+Maze.WIN_MARGIN = 0.01;
 
 //Get the rotation matrix associated with the player's current position.
 //This matrix rotates the sphere so that the player's position is the south
@@ -172,6 +173,10 @@ Maze.prototype.snapToEdge = function() {
 //linear velocity on the surface where the player is.
 Maze.prototype.getTropicRotationFactor = function() {
 	return 1 / Math.sqrt(Math.sin(this.playerPosition.phi));
+};
+
+Maze.prototype.isWin = function() {
+	return this.playerPosition.phi < Maze.WIN_MARGIN;
 };
 
 Maze.prototype.logMaze = function() {
@@ -319,17 +324,17 @@ Maze.EASY = {
 	"meridians": 10,
 	"tropics": 7,
 	"completeEquator": true,
-	"randomlyAddEdges": 5
+	"randomlyAddEdges": 6
 };
 Maze.MEDIUM = {
 	"meridians": 12,
-	"tropics": 9,
+	"tropics": 13,
 	"completeEquator": true,
-	"randomlyAddEdges": 3
+	"randomlyAddEdges": 5
 };
 Maze.HARD = {
-	"meridians": 14,
-	"tropics": 11,
+	"meridians": 16,
+	"tropics": 15,
 	"completeEquator": false,
 	"randomlyAddEdges": 0
 };
