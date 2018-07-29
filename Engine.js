@@ -247,5 +247,6 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 	//Start:
 	initializeUiFunctions();
 	menuScreen();
+	UiController.updateSkin();
 	requestAnimationFrame(mainLoop);
 })();

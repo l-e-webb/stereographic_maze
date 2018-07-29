@@ -111,7 +111,7 @@ function Maze(difficulty) {
 }
 Maze.prototype = Object.create(Maze);
 Maze.prototype.constructor = Maze;
-Maze.WIN_MARGIN = 0.01;
+Maze.WIN_MARGIN = 0.02;
 
 //Get the rotation matrix associated with the player's current position.
 //This matrix rotates the sphere so that the player's position is the south
@@ -216,6 +216,14 @@ function Node(theta, phi) {
 }
 Node.prototype = Object.create(Node);
 Node.prototype.constructor = Node;
+
+Node.prototype.isReflex = function() {
+	if (this.north && this.north.present && this.south && this.south.present &&
+	 !this.east.present && !this.west.present) return true;
+	if (this.east.present && this.west.present &&
+	 (!this.north || !this.north.present) && (!this.south || !this.south.present)) return true;
+	return false;
+};
 
 function Edge(node1, node2, weight) {
 	this.node1 = node1;

@@ -3,7 +3,7 @@
 
 function StereographicRenderer(context) {
 	this.c = context;
-	this.setSkin("light");
+	this.setSkin("cyber");
 	this.update();
 	this.needsRedraw = true;
 	this.timer = 0;
@@ -12,14 +12,13 @@ StereographicRenderer.prototype = Object.create(StereographicRenderer);
 StereographicRenderer.prototype.constructor = StereographicRenderer;
 
 StereographicRenderer.CENTER_DISTANCE_CAP = 10000;
-StereographicRenderer.POINT_RADIUS = 4;
+StereographicRenderer.POINT_RADIUS = 2;
+StereographicRenderer.POINT_RADIUS_LARGE = 4;
 StereographicRenderer.GOAL_RADIUS_MIN = 0.075;
 StereographicRenderer.GOAL_RADIUS_DIFF = 0.02;
 StereographicRenderer.GOAL_RADIUS_PERIOD = 3;
 
 StereographicRenderer.prototype.update = function(delta) {
-	this.timer += delta;
-	this.timer = this.timer % 1000;
 	if (this.c.canvas.width != document.body.clientWidth ||
 	 this.c.canvas.height != document.body.clientHeight) {
 		this.c.canvas.width = document.body.clientWidth;
@@ -27,8 +26,15 @@ StereographicRenderer.prototype.update = function(delta) {
 		this.xoffset = this.c.canvas.width / 2;
 		this.yoffset = this.c.canvas.height / 2;
 		scale = (this.c.canvas.width / 2.0);
-		this.setSkin(this.skin.name);
 	}
+	if (delta) {
+		this.timer += delta;
+		this.timer = this.timer % 1000;
+		this.skin.update(delta, this);
+	}
+	this.c.strokeStyle = this.skin.lineColor;
+	this.c.fillStyle = this.skin.lineColor;
+	this.updateLineWidth();
 	this.needsRedraw = true;
 };
 
@@ -142,6 +148,11 @@ StereographicRenderer.prototype.point = function(point) {
 	this.planarPoint(planarPoint.x, planarPoint.y);
 };
 
+StereographicRenderer.prototype.pointLarge = function(point) {
+	var planarPoint = point.project();
+	this.planarPointLarge(planarPoint.x, planarPoint.y);
+};
+
 StereographicRenderer.prototype.planarCircle = function(cx, cy, radius, filled) {
 	this.skin.planarArc(this.c, this.scale * cx + this.xoffset, this.scale * cy + this.yoffset, this.scale * radius, 0, TAU, filled);
 };
@@ -156,6 +167,10 @@ StereographicRenderer.prototype.planarLine = function(x1, y1, x2, y2) {
 
 StereographicRenderer.prototype.planarPoint = function(x1, y1) {
 	this.planarCircle(x1, y1, StereographicRenderer.POINT_RADIUS / this.scale, true);
+};
+
+StereographicRenderer.prototype.planarPointLarge = function(x1, y1) {
+	this.planarCircle(x1, y1, StereographicRenderer.POINT_RADIUS_LARGE / this.scale, true);
 };
 
 StereographicRenderer.prototype.renderGlobe = function(meridians, tropics, rotationMatrix) {
@@ -178,6 +193,8 @@ StereographicRenderer.prototype.renderMaze = function(maze, rotationMatrix) {
 	var point2 = new SphereVector();
 	var point3 = new SphereVector();
 	var radius;
+
+	//Draw edges
 	for (var i = 0; i < maze.edges.length; i++) {
 		var edge = maze.edges[i];
 		if (!edge.present) continue;
@@ -200,10 +217,27 @@ StereographicRenderer.prototype.renderMaze = function(maze, rotationMatrix) {
 		point3.rotate(rotationMatrix)
 		this.arc(center, radius, point1, point2, point3);
 	}
-	center.set(maze.playerPosition);
+
+	//Draw endpoints
+	for (var tropic = 1; tropic < maze.nodes.length; tropic++) {
+		for (var meridian = 0; meridian < maze.nodes[1].length; meridian++) {
+			var node = maze.nodes[tropic][meridian];
+			if (node.isReflex()) continue;
+			center.set(node.position);
+			center.rotate(rotationMatrix);
+			this.point(center);
+		}
+	}
+	center.set(maze.southPole.position);
 	center.rotate(rotationMatrix);
 	this.point(center);
-	center.set(0, 0);
+	
+
+	//Draw player and goal.
+	center.set(maze.playerPosition);
+	center.rotate(rotationMatrix);
+	this.pointLarge(center);
+	center.set(maze.northPole.position);
 	center.rotate(rotationMatrix);
 	this.point(center);
 	var goalCircleTime = (this.timer % this.GOAL_RADIUS_PERIOD) / this.GOAL_RADIUS_PERIOD;
@@ -212,11 +246,16 @@ StereographicRenderer.prototype.renderMaze = function(maze, rotationMatrix) {
 	this.circle(center, goalRadius);
 };
 
-StereographicRenderer.lightSkin = {};
-StereographicRenderer.lightSkin.name = "light";
-StereographicRenderer.lightSkin.lineWidth = 3;
-StereographicRenderer.lightSkin.backgroundColor = "#FFF";
-StereographicRenderer.lightSkin.lineColor = "#000";
+//"Light" skin
+StereographicRenderer.lightSkin = {
+	"name": "light",
+	"lineWidth": 3,
+	"backgroundColor": "#FFF",
+	"lineColor": "#000"
+};
+
+StereographicRenderer.lightSkin.update = function(delta, renderer) {};
+
 StereographicRenderer.lightSkin.planarArc = function(c, cx, cy, radius, angle1, angle2, filled) {
 	c.beginPath();
 	c.arc(cx, cy, radius, angle1, angle2);
@@ -231,11 +270,16 @@ StereographicRenderer.lightSkin.planarLine = function(c, x1, y1, x2, y2) {
 	c.stroke();
 };
 
-StereographicRenderer.darkSkin = {};
-StereographicRenderer.darkSkin.name = "dark";
-StereographicRenderer.darkSkin.lineWidth = 3;
-StereographicRenderer.darkSkin.backgroundColor = "#000";
-StereographicRenderer.darkSkin.lineColor = "#FFF";
+//"Dark" skin
+StereographicRenderer.darkSkin = {
+	"name": "dark",
+	"lineWidth": 3,
+	"backgroundColor": "#000",
+	"lineColor": "#FFF"
+};
+
+StereographicRenderer.darkSkin.update = function(delta, renderer) {};
+
 StereographicRenderer.darkSkin.planarArc = function(c, cx, cy, radius, angle1, angle2, filled) {
 	c.beginPath();
 	c.arc(cx, cy, radius, angle1, angle2);
@@ -250,11 +294,57 @@ StereographicRenderer.darkSkin.planarLine = function(c, x1, y1, x2, y2) {
 	c.stroke();
 };
 
-StereographicRenderer.cyberSkin = {};
-StereographicRenderer.cyberSkin.name = "cyber";
-StereographicRenderer.cyberSkin.lineWidth = 3;
-StereographicRenderer.cyberSkin.backgroundColor = "#000";
-StereographicRenderer.cyberSkin.lineColor = "#0FF";
+//"Cyber" skin
+StereographicRenderer.cyberSkin = {
+	"name": "cyber",
+	"lineWidth": 3,
+	"backgroundColor": "#000",
+	"lineColor": "#0FF",
+	"timer": 0,
+	"timeBetweenFlashes": 10,
+	"flashTime": 3,
+	"darkColor": "#0C7",
+	"lightColor": "#AFF",
+	"flashing": true
+};
+
+StereographicRenderer.cyberSkin.update = function(delta, renderer) {
+	var skin = StereographicRenderer.cyberSkin;
+	skin.timer += delta;
+	if (skin.flashing && skin.timer > skin.flashTime) {
+		skin.timer = 0;
+		skin.flashing = false;
+	}
+	if (!skin.flashing && skin.timer > skin.timeBetweenFlashes) {
+		skin.timer = 0;
+		skin.flashing = true;
+	}
+
+	skin.lineColor = renderer.c.createRadialGradient(
+		renderer.xoffset,
+		renderer.yoffset,
+		0,
+		renderer.xoffset,
+		renderer.yoffset,
+		Math.max(renderer.xoffset, renderer.yoffset)
+	);
+
+	if (skin.flashing) {
+		var flashPercentage = skin.timer / skin.flashTime;
+		if (flashPercentage != 0) {
+			skin.lineColor.addColorStop(0, skin.darkColor)
+		}
+		skin.lineColor.addColorStop(flashPercentage, skin.lightColor);
+		if (flashPercentage < 0.98) {
+			skin.lineColor.addColorStop(flashPercentage + 0.01, skin.darkColor);
+		}
+		skin.lineColor.addColorStop(1, skin.lightColor);
+	} else {
+		skin.lineColor.addColorStop(0, skin.darkColor);
+		skin.lineColor.addColorStop(1, skin.lightColor);
+	}
+};
+
 StereographicRenderer.cyberSkin.planarArc = function(c, cx, cy, radius, angle1, angle2, filled) {
 	c.beginPath();
 	c.arc(cx, cy, radius, angle1, angle2);
