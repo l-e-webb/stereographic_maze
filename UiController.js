@@ -8,8 +8,6 @@ UiController.init = function() {
 	UiController.aboutBox = document.getElementById("aboutBox");
 	UiController.pauseMenu = document.getElementById("pauseMenu");
 	UiController.winBox = document.getElementById("winBox");
-	UiController.difficultySelect = document.getElementById("difficultySelect");
-	UiController.skinSelect = document.getElementById("skinSelect");
 	UiController.playButton = document.getElementById("playButton");
 	UiController.aboutButton = document.getElementById("aboutButton");
 	UiController.closeAboutButton = document.getElementById("closeAboutButton");
@@ -20,8 +18,13 @@ UiController.init = function() {
 	UiController.lightSheet = document.getElementById("lightSheet");
 	UiController.darkSheet = document.getElementById("darkSheet");
 	UiController.cyberSheet = document.getElementById("cyberSheet");
+	UiController.difficultyLeft = document.getElementById("difficultyLeft");
+	UiController.difficultyRight = document.getElementById("difficultyRight");
+	UiController.difficultySelect = document.getElementById("difficulty");
+	UiController.skinLeft = document.getElementById("skinLeft");
+	UiController.skinRight = document.getElementById("skinRight");
+	UiController.skinSelect = document.getElementById("skin");
 
-	UiController.skinSelect.onchange = UiController.updateSkin;
 	UiController.aboutButton.onclick = function() {
 		UiController.hideAll();
 		UiController.showAboutBox();
@@ -31,6 +34,50 @@ UiController.init = function() {
 		UiController.hideAll();
 		UiController.showMenu();
 	};
+
+	UiController.difficultyLeft.onclick = function() {
+		if (UiController.difficulty > 0) {
+			UiController.difficulty--;
+			UiController.updateUiMenu();
+		}
+	};
+
+	UiController.difficultyRight.onclick = function() {
+		if (UiController.difficulty < 2) {
+			UiController.difficulty++;
+			UiController.updateUiMenu();
+		}
+	};
+
+	UiController.skinLeft.onclick = function() {
+		if (UiController.skin > 0) {
+			UiController.skin--;
+			UiController.updateUiMenu();
+		}
+	};
+
+	UiController.skinRight.onclick = function() {
+		if (UiController.skin < 2) {
+			UiController.skin++;
+			UiController.updateUiMenu();
+		}
+	};
+
+	UiController.skinSettings = ["Cyber", "Light", "Dark"];
+	UiController.difficultySettings = ["Easy", "Medium", "Hard"];
+	UiController.skin = 0;
+	UiController.difficulty = 1;
+	UiController.updateUiMenu();
+};
+
+UiController.updateUiMenu = function() {
+	UiController.difficultySelect.innerHTML = UiController.difficultySettings[UiController.difficulty];
+	UiController.skinSelect.innerHTML = UiController.skinSettings[UiController.skin];
+	UiController.difficultyLeft.disabled = UiController.difficulty == 0;
+	UiController.difficultyRight.disabled = UiController.difficulty == 2;
+	UiController.skinLeft.disabled = UiController.skin == 0;
+	UiController.skinRight.disabled = UiController.skin == 2;
+	UiController.updateSkin();
 };
 
 UiController.showMenu = function() {
@@ -92,15 +139,15 @@ UiController.updateSkin = function() {
 			UiController.disableSheet(UiController.lightSheet);
 			UiController.disableSheet(UiController.darkSheet);
 	}
-	renderer.setSkin(skinSelection);
+	UiController.renderer.setSkin(skinSelection);
 };
 
 UiController.getDifficultySelection = function() {
-	return UiController.difficultySelect.value;
+	return UiController.difficultySettings[UiController.difficulty].toLowerCase();
 };
 
 UiController.getSkinSelection = function() {
-	return UiController.skinSelect.value;
+	return UiController.skinSettings[UiController.skin].toLowerCase();
 };
 
 UiController.disableSheet = function(node) {
@@ -117,6 +164,4 @@ UiController.hideElement = function(element) {
 
 UiController.showElement = function(element) {
 	element.style.display = "block";
-}
-
-UiController.init();
+};

@@ -188,6 +188,16 @@ StereographicRenderer.prototype.renderGlobe = function(meridians, tropics, rotat
 };
 
 StereographicRenderer.prototype.renderMaze = function(maze, rotationMatrix) {
+	if (this.skin.renderGlobe) {
+		var strokeStyle = this.c.strokeStyle;
+		this.c.strokeStyle = this.skin.globeStyle;
+		var lineWidth = this.c.lineWidth;
+		this.c.lineWidth = this.c.lineWidth * 1;
+		this.renderGlobe(maze.meridians, maze.tropics + 1, rotationMatrix);
+		this.c.strokeStyle = strokeStyle;
+		this.c.lineWidth = lineWidth;
+	}
+
 	var center = new SphereVector();
 	var point1 = new SphereVector();
 	var point2 = new SphereVector();
@@ -251,7 +261,8 @@ StereographicRenderer.lightSkin = {
 	"name": "light",
 	"lineWidth": 3,
 	"backgroundColor": "#FFF",
-	"lineColor": "#000"
+	"lineColor": "#000",
+	"drawGlobe": false
 };
 
 StereographicRenderer.lightSkin.update = function(delta, renderer) {};
@@ -275,7 +286,8 @@ StereographicRenderer.darkSkin = {
 	"name": "dark",
 	"lineWidth": 3,
 	"backgroundColor": "#000",
-	"lineColor": "#FFF"
+	"lineColor": "#FFF",
+	"drawGlobe": false
 };
 
 StereographicRenderer.darkSkin.update = function(delta, renderer) {};
@@ -298,14 +310,17 @@ StereographicRenderer.darkSkin.planarLine = function(c, x1, y1, x2, y2) {
 StereographicRenderer.cyberSkin = {
 	"name": "cyber",
 	"lineWidth": 3,
-	"backgroundColor": "#000",
-	"lineColor": "#0FF",
+	"backgroundColor": "#2f2f2f",
+	"lineColor": "#0fa",
 	"timer": 0,
-	"timeBetweenFlashes": 10,
-	"flashTime": 3,
-	"darkColor": "#0C7",
-	"lightColor": "#AFF",
-	"flashing": true
+	"timeBetweenFlashes": 4,
+	"flashTime": 0.5,
+	"flashStyle": "linear",
+	"darkColor": "#0fa",
+	"lightColor": "#e6ffdd",
+	"flashing": true,
+	"renderGlobe": true,
+	"globeStyle": "#1f1f1f",
 };
 
 StereographicRenderer.cyberSkin.update = function(delta, renderer) {
@@ -330,18 +345,39 @@ StereographicRenderer.cyberSkin.update = function(delta, renderer) {
 	);
 
 	if (skin.flashing) {
-		var flashPercentage = skin.timer / skin.flashTime;
+		var timerPercentage = skin.timer / skin.flashTime;
+		var flashPercentage;
+		if (skin.flashStyle == 'sine') {
+			flashPercentage = 0.1 + 0.9 * Math.sin(Math.PI * timerPercentage);
+		} else {
+			flashPercentage = 0.1 + 0.9 * timerPercentage;
+		}
 		if (flashPercentage != 0) {
 			skin.lineColor.addColorStop(0, skin.darkColor)
 		}
+		if (flashPercentage > 0.02) {
+			var innerDarkStop;
+			if (timerPercentage < 0.5) {
+				innerDarkStop = flashPercentage * 0.5;
+			} else {
+				innerDarkStop = flashPercentage - 0.01;
+			}
+			skin.lineColor.addColorStop(innerDarkStop, skin.darkColor);
+		}
 		skin.lineColor.addColorStop(flashPercentage, skin.lightColor);
 		if (flashPercentage < 0.98) {
-			skin.lineColor.addColorStop(flashPercentage + 0.01, skin.darkColor);
+			var outerDarkStop;
+			if (timerPercentage < 0.05) {
+				outerDarkStop = flashPercentage + 0.01;
+			} else {
+				outerDarkStop = 1 - 0.5 * (1 - flashPercentage);
+			}
+			skin.lineColor.addColorStop(outerDarkStop, skin.darkColor);
 		}
-		skin.lineColor.addColorStop(1, skin.lightColor);
+		skin.lineColor.addColorStop(1, skin.darkColor);
 	} else {
 		skin.lineColor.addColorStop(0, skin.darkColor);
-		skin.lineColor.addColorStop(1, skin.lightColor);
+		skin.lineColor.addColorStop(1, skin.darkColor);
 	}
 };
 

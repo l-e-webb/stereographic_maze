@@ -19,36 +19,35 @@
   <div id="title">Stereographic Maze</div>
   <div id="menu" class="uiBox">
   	<button id="playButton">Play!</button>
-  	<div class="selectorRow" id="difficultySelectRow">
-  		Difficulty: <select id="difficultySelect">
-  			<option value="easy">Easy</option>
-  			<option value="medium">Medium</option>
-  			<option value="hard">Hard</option>
-  		</select>
-	  </div>
-	  <div class="selectorRow" id="skinSelectRow">
-		Color scheme: <select id="skinSelect">
-      <option value="cyber">Cyber</option>
-			<option value="light">Light</option>
-			<option value="dark">Dark</option>
-		</select>
-	  </div>
-	  <button id="aboutButton">About</button>
+    <p>Difficulty</p>
+    <div class="buttonRow">
+      <button class="arrowButton" id="difficultyLeft"><</button>
+      <div class="settingCenter" id="difficulty">Medium</div>
+      <button class="arrowButton" id="difficultyRight">></button>
+    </div>
+    <p>Color scheme</p>
+    <div class="buttonRow">
+      <button class="arrowButton" id="skinLeft"><</button>
+      <div class="settingCenter" id="skin">Cyber</div>
+      <button class="arrowButton" id="skinRight">></button>
+    </div>
+    <p><button id="aboutButton">About</button></p>
   </div>
   <div id="pauseMenu" class="uiBox inGameBox">
-    <p>Paused...</p>
-    <span>
+    <p class="centerText">Paused...</p>
+    <p class="centerText">
       <button id="continueButton">Continue</button>
       <button id="pauseMenuReturnToMenuButton">Return to menu</button>
+    </p>
   </div>
   <div id="winBox" class="uiBox inGameBox">
-    <p>
+    <p class="centerText">
       You win!
     </p>
-    <span>
+    <p class="centerText">
       <button id="playAgainButton">Play again</button>
       <button id="winBoxReturnToMenuButton">Return to menu</button>
-    </span>
+    </p>
   </div>
   <div id="aboutBox" class="uiBox">
     <h1>Stereographic Maze</h1>
@@ -64,7 +63,9 @@
     <p>
       Created by <a href="https://itch.io/tangledwebgames" target="_blank">Louis Webb</a>, distributed under Creative Commons license <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode" target="_blank">Attribution-NonCommercial-ShareAlike 4.0</a>. Feel free to share for non-commercial purposes, with attribution.
     </p>
-    <button id="closeAboutButton">Return</button>
+    <p class="centerText">
+      <button id="closeAboutButton">Return</button>
+    </p>
   </div>
 </body>
 <script src="UiController.js"></script>

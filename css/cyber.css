@@ -1,25 +1,7 @@
-body {
-	color: #0C7;
-	background-color: black;
-}
-
-#canvas {
-	border-color: #0C7;
-}
-
-.uiBox {
-	border-color: #0C7;
-	background-color: black;
-}
-
-a:link, a:hover, a:visited {
-	color: #7FC;
-}
-
-a:hover, a:active {
-	text-shadow: 1px 1px #7FC;
-}
-
-a:active {
-	color: #AFF;
+:root {
+	--primary-color: #0fb;
+	--background-color: #2a2a2a;
+	--highlight-color: #9fd;
+	--active-color: #e6ffdd;
+	--disabled-color: gray;
 }

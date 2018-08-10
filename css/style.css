@@ -3,7 +3,58 @@ body {
 	height: 98vh;
 	min-width: 800px;
 	min-height: 600px;
-	font-family: "Courier", monospace;
+	font-family: Bubble, "Courier", monospace;
+	color: var(--primary-color);
+	border-color: var(--primary-color);
+	background-color: var(--background-color);
+}
+
+a:link, a:visited {
+	color: var(--primary-color);
+}
+
+a:hover {
+	color: var(--highlight-color);
+}
+
+a:active {
+	color: var(--active-color);
+	text-shadow: 1px 1px var(--active-color);
+}
+
+button {
+	font-size: 18pt;
+	min-width: 100px;
+	padding: 10px;
+	font-family: Bubble;
+	border-radius: 6px;
+	border-width: 3px;
+	color: var(--primary-color);
+	border-color: var(--primary-color);
+	background-color: var(--background-color);
+}
+
+button:hover {
+	color: var(--highlight-color);
+	border-color: var(--highlight-color);
+}
+
+button:active {
+	color: var(--active-color);
+	border-color: var(--active-color);
+}
+
+button:disabled {
+	color: var(--disabled-color);
+	border-color: var(--disabled-color);
+}
+
+button:focus {
+	outline: 0;
+}
+
+p {
+	margin-bottom: 0;
 }
 
 @font-face {
@@ -11,22 +62,13 @@ body {
 	src: url(font/crackdown/crkdwno1.ttf);
 }
 
-.selectorRow {
-	margin-top: 1em;
-	margin-bottom: 1em;
-}
-
-.button {
-	width: 100px;
-	padding: 5px;
-
-}
-
 .uiBox {
+	font-size: 18pt;
 	border-radius: 15px;
 	border: 3px solid;
 	padding: 15px;
 	z-index: 1;
+	background-color: var(--background-color);
 }
 
 .inGameBox {
@@ -34,6 +76,20 @@ body {
 	top: 25%;
 	left: 50%;
 	transform: translate(-50%, -50%);
+}
+
+.arrowButton {
+	min-width: 50px;
+	width: 50px;
+}
+
+.settingCenter {
+	width: 100px;
+	display: inline-block;
+}
+
+.centerText {
+	text-align: center;
 }
 
 #canvas {
@@ -48,30 +104,30 @@ body {
 }
 
 #title {
-	font-family: Bubble;
 	margin: auto;
 	width: 60%;
 	font-size: 48pt;
 	position: absolute;
 	text-align: center;
 	z-index: 1;
-	top: 25%;
+	top: 20%;
 	left: 50%;
 	transform: translateX(-50%);
 }
 
 #menu {
-	width: 250px;
-	margin: auto;
+	width: 400px;
 	position: absolute;
 	text-align: center;
-	top: 75%;
+	top: 70%;
 	left: 50%;
 	transform: translate(-50%, -50%);
 }
 
 #aboutBox {
-	width: 650px;
+	font-family: "Courier", monospace;
+	font-size: 12pt;
+	width: 700px;
 	max-height: 90%;
 	margin: 0;
 	position: absolute;

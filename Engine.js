@@ -1,6 +1,5 @@
 //Engine that handles animation loop and controls.
 var maze;
-var renderer = new StereographicRenderer(document.getElementById("canvas").getContext("2d"));
 
 (function() {
 	var MAX_FPS = 60;
@@ -29,6 +28,8 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 	var autoUpDown;
 	var paused = false;
 	var inGame = false;
+
+	var renderer;
 
 	var Key = {
 		_pressed: {},
@@ -245,6 +246,9 @@ var renderer = new StereographicRenderer(document.getElementById("canvas").getCo
 	}
 
 	//Start:
+	renderer = new StereographicRenderer(document.getElementById("canvas").getContext("2d"));
+	UiController.renderer = renderer;
+	UiController.init();
 	initializeUiFunctions();
 	menuScreen();
 	UiController.updateSkin();
