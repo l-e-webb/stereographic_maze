@@ -310,31 +310,24 @@ StereographicRenderer.darkSkin.planarLine = function(c, x1, y1, x2, y2) {
 StereographicRenderer.cyberSkin = {
 	"name": "cyber",
 	"lineWidth": 3,
-	"backgroundColor": "#2f2f2f",
-	"lineColor": "#0fa",
-	"timer": 0,
+	"backgroundColor": "#202020",
+	"lineColor": "#00ffbb",
+	"flashTimer": 0,
+	"glowTimer": 0,
 	"timeBetweenFlashes": 4,
 	"flashTime": 0.5,
 	"flashStyle": "linear",
-	"darkColor": "#0fa",
+	"darkColor": "#00c0a0",
+	"glowColor": "#50ffdd",
+	"glowPeriod": 1.5,
 	"lightColor": "#e6ffdd",
 	"flashing": true,
 	"renderGlobe": true,
-	"globeStyle": "#1f1f1f",
+	"globeStyle": "#101010",
 };
 
 StereographicRenderer.cyberSkin.update = function(delta, renderer) {
 	var skin = StereographicRenderer.cyberSkin;
-	skin.timer += delta;
-	if (skin.flashing && skin.timer > skin.flashTime) {
-		skin.timer = 0;
-		skin.flashing = false;
-	}
-	if (!skin.flashing && skin.timer > skin.timeBetweenFlashes) {
-		skin.timer = 0;
-		skin.flashing = true;
-	}
-
 	skin.lineColor = renderer.c.createRadialGradient(
 		renderer.xoffset,
 		renderer.yoffset,
@@ -343,9 +336,26 @@ StereographicRenderer.cyberSkin.update = function(delta, renderer) {
 		renderer.yoffset,
 		Math.max(renderer.xoffset, renderer.yoffset)
 	);
+	
+	//Handle glow:
+	skin.glowTimer = (skin.glowTimer + delta) % skin.glowPeriod;
+	var glowPercentage = Math.pow(Math.sin(Math.PI * skin.glowTimer / skin.glowPeriod), 2);
+	//var glowPercentage = 0.5 * (1 + Math.sin(2 * Math.PI * skin.glowTimer / skin.glowPeriod));
+	var darkColor = ColorUtil.blendColors(skin.darkColor, skin.glowColor, glowPercentage);
 
+
+	//Handle flash
+	skin.flashTimer += delta;
+	if (skin.flashing && skin.flashTimer > skin.flashTime) {
+		skin.flashTimer = 0;
+		skin.flashing = false;
+	}
+	if (!skin.flashing && skin.flashTimer > skin.timeBetweenFlashes) {
+		skin.flashTimer = 0;
+		skin.flashing = true;
+	}
 	if (skin.flashing) {
-		var timerPercentage = skin.timer / skin.flashTime;
+		var timerPercentage = skin.flashTimer / skin.flashTime;
 		var flashPercentage;
 		if (skin.flashStyle == 'sine') {
 			flashPercentage = 0.1 + 0.9 * Math.sin(Math.PI * timerPercentage);
@@ -353,7 +363,7 @@ StereographicRenderer.cyberSkin.update = function(delta, renderer) {
 			flashPercentage = 0.1 + 0.9 * timerPercentage;
 		}
 		if (flashPercentage != 0) {
-			skin.lineColor.addColorStop(0, skin.darkColor)
+			skin.lineColor.addColorStop(0, darkColor)
 		}
 		if (flashPercentage > 0.02) {
 			var innerDarkStop;
@@ -362,7 +372,7 @@ StereographicRenderer.cyberSkin.update = function(delta, renderer) {
 			} else {
 				innerDarkStop = flashPercentage - 0.01;
 			}
-			skin.lineColor.addColorStop(innerDarkStop, skin.darkColor);
+			skin.lineColor.addColorStop(innerDarkStop, darkColor);
 		}
 		skin.lineColor.addColorStop(flashPercentage, skin.lightColor);
 		if (flashPercentage < 0.98) {
@@ -372,12 +382,12 @@ StereographicRenderer.cyberSkin.update = function(delta, renderer) {
 			} else {
 				outerDarkStop = 1 - 0.5 * (1 - flashPercentage);
 			}
-			skin.lineColor.addColorStop(outerDarkStop, skin.darkColor);
+			skin.lineColor.addColorStop(outerDarkStop, darkColor);
 		}
-		skin.lineColor.addColorStop(1, skin.darkColor);
+		skin.lineColor.addColorStop(1, darkColor);
 	} else {
-		skin.lineColor.addColorStop(0, skin.darkColor);
-		skin.lineColor.addColorStop(1, skin.darkColor);
+		skin.lineColor.addColorStop(0, darkColor);
+		skin.lineColor.addColorStop(1, darkColor);
 	}
 };
 

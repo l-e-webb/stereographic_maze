@@ -112,6 +112,11 @@ function Maze(difficulty) {
 Maze.prototype = Object.create(Maze);
 Maze.prototype.constructor = Maze;
 Maze.WIN_MARGIN = 0.02;
+Maze.PUSH_MARGIN= 0.05;
+Maze.NORTH = 0;
+Maze.EAST = 1;
+Maze.SOUTH = 2;
+Maze.WEST = 3;
 
 //Get the rotation matrix associated with the player's current position.
 //This matrix rotates the sphere so that the player's position is the south
@@ -123,6 +128,73 @@ Maze.prototype.getRotationMatrix = function() {
 };
 
 Maze.prototype.movePlayer = function(leftRight, upDown) {
+	if (leftRight == 0 || upDown == 0) {
+		var nearestEdge = this.getNearestEdge(this.playerPosition);
+		var nearestNode;
+		var direction;
+		if (nearestEdge.node1.pseudodistance(this.playerPosition) < Maze.PUSH_MARGIN) {
+			nearestNode = nearestEdge.node1;
+			if (nearestEdge.type == Edge.MERIDIAN) {
+				direction = Maze.NORTH;
+			} else {
+				direction = Maze.WEST;
+			}
+		} else if (nearestEdge.node2.pseudodistance(this.playerPosition) < Maze.PUSH_MARGIN) {
+			nearestNode = nearestEdge.node2;
+			if (nearestEdge.type == Edge.MERIDIAN) {
+				direction = Maze.SOUTH;
+			} else {
+				direction = Maze.EAST;
+			}
+		}
+
+		//If we are very near a node...
+		if (nearestNode) {
+			//If the node is north of us, and we are trying to go east
+			//or west, and that node has the appropriate edge, go north
+			//towards the node.
+			if (
+				direction == Maze.NORTH &&
+				((leftRight < 0 && nearestNode.west && nearestNode.west.present) ||
+				(leftRight > 0 && nearestNode.east && nearestNode.east.present))
+			) {
+				upDown = -Math.abs(leftRight);
+			}
+
+			//If the node is south of us, and we are trying to go east
+			//or west, and that node has the appropriate edge, go south
+			//towards the node.  
+			else if (
+				direction == Maze.SOUTH &&
+				((leftRight < 0 && nearestNode.west && nearestNode.west.present) ||
+				(leftRight > 0 && nearestNode.east && nearestNode.east.present))
+			) {
+				upDown = Math.abs(leftRight);
+			}
+
+			//If the node is east of us, and we are trying to go north
+			//or south, and that node has the appropriate edge, go east
+			//towards the node.
+			else if (
+				direction == Maze.EAST &&
+				((upDown < 0 && nearestNode.north && nearestNode.north.present) ||
+				(upDown > 0 && nearestNode.south && nearestNode.south.present))
+			) {
+				leftRight = Math.abs(upDown);
+			}
+
+			//If the node is west of us, and we are trying to go north
+			//or south, and that node has the appropriate edge, go east
+			//towards the node.
+			else if (
+				direction == Maze.WEST &&
+				((upDown < 0 && nearestNode.north && nearestNode.north.present) ||
+				(upDown > 0 && nearestNode.south && nearestNode.south.present))
+			) {
+				leftRight = -Math.abs(upDown);
+			} 
+		}
+	}
 	leftRight *= this.getTropicRotationFactor();
 	if (upDown + this.playerPosition.phi > PI ||
 		upDown + this.playerPosition.phi < 0) upDown = 0;
@@ -130,24 +202,10 @@ Maze.prototype.movePlayer = function(leftRight, upDown) {
 	this.snapToEdge();
 };
 
-Maze.prototype.snapToEdge = function() {
-	var snapEdge = null;
-	var bestSoFar = TAU;
-	for (var i = 0; i < this.edges.length; i++) {
-		var edge = this.edges[i];
-		if (!edge.present) continue;
-		var distance = edge.pseudodistance(this.playerPosition);
-		if (distance == 0) {
-			//If there is an edge with distance 0, we're on it.
-			return;
-		}
-		if (distance == -1) continue;
-		if (distance < bestSoFar) {
-			snapEdge = edge;
-			bestSoFar = distance;
-		}
-	}
+Maze.prototype.snapToEdge = function(snapEdge) {
+	var snapEdge = this.getNearestEdge(this.playerPosition);
 	if (!snapEdge) return;
+	if (snapEdge.pseudodistance(this.playerPosition) < 0.001) return;
 	if (snapEdge.type == Edge.MERIDIAN) {
 		this.playerPosition.set(
 			snapEdge.constantAngle + 0.0001,
@@ -167,6 +225,51 @@ Maze.prototype.snapToEdge = function() {
 			snapEdge.constantAngle + 0.0001
 		);
 	}
+};
+
+Maze.prototype.getNearestEdge = function(sphereVector) {
+	var nearestEdge = null;
+	var bestSoFar = TAU;
+	for (var i = 0; i < this.edges.length; i++) {
+		var edge = this.edges[i];
+		if (!edge.present) continue;
+		var distance = edge.pseudodistance(sphereVector);
+		if (distance < 0.001) {
+			//If there is an edge with distance 0, we're on it.
+			return edge;
+		}
+		if (distance == -1) continue;
+		if (distance < bestSoFar) {
+			nearestEdge = edge;
+			bestSoFar = distance;
+		}
+	}
+	return nearestEdge;
+};
+
+Maze.prototype.getNearestNode = function(sphereVector) {
+	var nearestNode = null;
+	var bestSoFar = TAU;
+	for (var i = 1; i < this.nodes.length; i++) {
+		for (var j = 0; j < this.node[i].length; j++) {
+			var node = this.node[i][j];
+			var distance = node.pseudodistance(sphereVector);
+			if (distance < 0.001) {
+				return node;
+			}
+			if (distance < bestSoFar) {
+				bestSoFar = distance;
+				nearestNode = node;
+			}
+		}
+	}
+	if (this.northPole.pseudodistance(sphereVector) < bestSoFar) {
+		return this.northPole;
+	}
+	if (this.southPole.pseudodistance(sphereVector) < bestSoFar) {
+		return this.southPole;
+	}
+	return nearestNode;
 };
 
 //Tropic rotation should be faster closer to the poles to maintain constant
@@ -223,6 +326,10 @@ Node.prototype.isReflex = function() {
 	if (this.east.present && this.west.present &&
 	 (!this.north || !this.north.present) && (!this.south || !this.south.present)) return true;
 	return false;
+};
+
+Node.prototype.pseudodistance = function(sphereVector) {
+	return this.position.pseudodistance(sphereVector);
 };
 
 function Edge(node1, node2, weight) {
