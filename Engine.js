@@ -47,11 +47,17 @@ var maze;
 
 		onKeydown: function(event) {
 			this._pressed[event.keyCode] = true;
-			if (inGame &&
-					(event.keyCode == this.ESC 
-					|| event.keyCode == this.SPACE)) {
-				if (!paused) pause(); else unpause();
-
+			if (inGame) {
+				if (event.keyCode == this.ESC 
+					|| event.keyCode == this.SPACE) {
+					paused ? unpause() : pause();
+				}
+				if (event.keyCode == this.UP ||
+					event.keyCode == this.DOWN ||
+					event.keyCode == this.LEFT ||
+					event.keyCode == this.RIGHT) {
+					event.preventDefault();
+				}
 			}
 		},
 

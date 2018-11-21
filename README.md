@@ -4,4 +4,4 @@
     
 In *Stereographic Maze*, our intrepid player (a dot) starts on the south pole (which is in the center of the screen), and must find its way to the north pole (marked by a modulating circle). Use the arrow keys to move along the surface of the sphere to eventually reach the north pole; or, more accurately, use the arrow keys to rotate the entire sphere to flip it upside down, getting the original north pole to be the south pole.
 
-Created by [Louis Webb](https://tangledwebgames.itch.io) licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-nc-sa/4.0/). Feel free to share for non-commercial purposes with attribution.
+Created by [Louis Webb](https://tangledwebgames.itch.io) licensed under a [Artistic License 2.0](https://opensource.org/licenses/Artistic-2.0).
