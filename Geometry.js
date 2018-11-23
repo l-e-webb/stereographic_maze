@@ -167,8 +167,8 @@ SphereVector.prototype = {
 		//Small phi values cause problemos.
 		var phi = Math.max(0.01, this.phi);
 		var r = Math.sin(phi) / (1 - Math.cos(phi));
-		//console.log("Projecting " + this.toString() + " to (" + r + ", " + this.theta + ")");
-		return new Vector2(r * Math.sin(this.theta), r * Math.cos(this.theta));
+		//Negated because canvas coordinates are upside down.
+		return new Vector2(-r * Math.sin(this.theta), -r * Math.cos(this.theta));
 	},
 	set: function(theta, phi) {
 		if (theta instanceof SphereVector) {

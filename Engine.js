@@ -145,10 +145,10 @@ var maze;
 		var leftRight = 0;
 		var upDown = 0;
 		if (playerControlled()) {
-			if (Key.isDown(Key.LEFT)) leftRight += 1;
-			if (Key.isDown(Key.RIGHT)) leftRight -= 1;
-			if (Key.isDown(Key.UP)) upDown -= 1;
-			if (Key.isDown(Key.DOWN)) upDown += 1;
+			if (Key.isDown(Key.LEFT)) leftRight -= 1;
+			if (Key.isDown(Key.RIGHT)) leftRight += 1;
+			if (Key.isDown(Key.UP)) upDown += 1;
+			if (Key.isDown(Key.DOWN)) upDown -= 1;
 		} else if (autoControlled()) {
 			autoControlTimer += delta;
 			if (autoControlTimer > AUTO_CONTROL_CHANGE_TIME) {

@@ -124,9 +124,9 @@ p {
 }
 
 #aboutBox {
-	font-family: "Courier", monospace;
+	font-family: monospace;
 	font-size: 12pt;
-	width: 700px;
+	width: 720px;
 	max-height: 90%;
 	margin: 0;
 	position: absolute;
