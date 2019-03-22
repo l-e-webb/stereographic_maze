@@ -9,15 +9,18 @@ var maze;
 	var CONTROL_MAZE = 2;
 	var CONTROL_FREE_AUTO = 3;
 	var CONTROL_TROPIC_AUTO = 4;
+	var CONTROL_MAZE_INTRO = 5;
 	var VIEW_GLOBE = 0;
 	var VIEW_MAZE = 1;
 	var MERIDIANS = 12;
 	var TROPICS = 15;
 	var SCALE = 400;
 	var AUTO_CONTROL_CHANGE_TIME = 10;
-
+	var INTRO_VIEW_EXIT_TIME = 1.3;
 	//Radians per second
 	var ROTATION_SPEED = PI / 6;
+	var INTRO_ACCEL = PI / 3;
+	var INTRO_MAX_ANGULAR_SPEED = PI;
 
 	var lastFrameTime = 0;
 	var rotationMatrix = new Matrix3();
@@ -26,6 +29,8 @@ var maze;
 	var autoControlTimer;
 	var autoLeftRight;
 	var autoUpDown;
+	var introPhi;
+	var introRotSpeed;
 	var paused = false;
 	var inGame = false;
 
@@ -77,7 +82,7 @@ var maze;
 		rotationMatrix = new Matrix3();
 		autoLeftRight = 0;
 		autoUpDown = 1;
-		renderer.scale = SCALE;
+		renderer.updateCanvas();
 		UiController.hideAll();
 		UiController.showMenu();
 		paused = false;
@@ -88,10 +93,12 @@ var maze;
 		maze = new Maze(UiController.getDifficultySelection());
 		rotationMatrix = new Matrix3();
 		lastFrameTime = 0;
-		renderer.needsRedraw = true;
-		renderer.scale = SCALE;
-		controlScheme = CONTROL_MAZE;
+		renderer.updateCanvas();
+		controlScheme = CONTROL_MAZE_INTRO;
 		view = VIEW_MAZE;
+		autoControlTimer = 0;
+		introPhi = 0.01;
+		introRotSpeed = 0;
 		UiController.hideAll();
 		paused = false;
 		inGame = true;
@@ -127,7 +134,7 @@ var maze;
 			return;
 		}
 
-		var delta = (timestamp - lastFrameTime) / 1000;
+		var delta = Math.min((timestamp - lastFrameTime) / 1000, 2 * FRAME_DURATION / 1000);
 		lastFrameTime = timestamp;
 
 		if (!paused) {
@@ -140,6 +147,25 @@ var maze;
 
 	function update(delta) {
 		renderer.update(delta);
+
+		if (introControlled()) {
+			if (autoControlTimer < INTRO_VIEW_EXIT_TIME) {
+				autoControlTimer += delta;
+			} else {
+				introRotSpeed = Math.min(
+					introRotSpeed + INTRO_ACCEL * delta,
+					INTRO_MAX_ANGULAR_SPEED
+					);
+				introPhi += introRotSpeed * delta;
+				if (introPhi > PI) {
+					controlScheme = CONTROL_MAZE;
+					introPhi = PI;
+				}
+			}
+			rotationMatrix = Matrix3.Ry(PI - introPhi);
+			renderer.needsRedraw = true;
+			return;
+		}
 
 		var rotation = ROTATION_SPEED * delta;
 		var leftRight = 0;
@@ -211,6 +237,10 @@ var maze;
 
 	function autoControlled() {
 		return controlScheme == CONTROL_FREE_AUTO || controlScheme == CONTROL_TROPIC_AUTO;
+	}
+
+	function introControlled() {
+		return controlScheme == CONTROL_MAZE_INTRO;
 	}
 
 	function updateAutoDirections() {

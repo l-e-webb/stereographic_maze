@@ -108,6 +108,8 @@ function Maze(difficulty) {
 	}
 
 	this.playerPosition = new SphereVector(0, PI - 0.01);
+	//Goal is tethered at half the phi of the northernmost tropic.
+	this.goalTether = new SphereVector(PI, PI / (this.tropics + 1) / 2);
 }
 Maze.prototype = Object.create(Maze);
 Maze.prototype.constructor = Maze;
@@ -117,6 +119,8 @@ Maze.NORTH = 0;
 Maze.EAST = 1;
 Maze.SOUTH = 2;
 Maze.WEST = 3;
+Maze.GOAL_TEXT = "GOAL";
+Maze.START_TEXT = "START";
 
 //Get the rotation matrix associated with the player's current position.
 //This matrix rotates the sphere so that the player's position is the south
@@ -280,6 +284,10 @@ Maze.prototype.getTropicRotationFactor = function() {
 
 Maze.prototype.isWin = function() {
 	return this.playerPosition.phi < Maze.WIN_MARGIN;
+};
+
+Maze.prototype.phiInterval = function() {
+	return PI / (this.tropics + 1);
 };
 
 Maze.prototype.logMaze = function() {

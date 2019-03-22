@@ -17,15 +17,17 @@ StereographicRenderer.POINT_RADIUS_LARGE = 4;
 StereographicRenderer.GOAL_RADIUS_MIN = 0.075;
 StereographicRenderer.GOAL_RADIUS_DIFF = 0.02;
 StereographicRenderer.GOAL_RADIUS_PERIOD = 3;
+StereographicRenderer.TEXT_VERT_OFFSET = 4;
+StereographicRenderer.TEXT_OSC_AMPLITUDE = 5;
+StereographicRenderer.TEXT_OSC_PERIOD = 3;
+StereographicRenderer.MIN_FONT_SIZE = 20;
+StereographicRenderer.MAX_FONT_SIZE = 45;
+StereographicRenderer.FONT_SIZE_RADIUS_COEFF = 0.25;
 
 StereographicRenderer.prototype.update = function(delta) {
 	if (this.c.canvas.width != document.body.clientWidth ||
 	 this.c.canvas.height != document.body.clientHeight) {
-		this.c.canvas.width = document.body.clientWidth;
-		this.c.canvas.height = document.body.clientHeight;
-		this.xoffset = this.c.canvas.width / 2;
-		this.yoffset = this.c.canvas.height / 2;
-		scale = (this.c.canvas.width / 2.0);
+	 	this.updateCanvas();
 	}
 	if (delta) {
 		this.timer += delta;
@@ -37,6 +39,16 @@ StereographicRenderer.prototype.update = function(delta) {
 	this.updateLineWidth();
 	this.needsRedraw = true;
 };
+
+StereographicRenderer.prototype.updateCanvas = function() {
+	this.c.canvas.width = document.body.clientWidth;
+	this.c.canvas.height = document.body.clientHeight;
+	this.xoffset = this.c.canvas.width / 2;
+	this.yoffset = this.c.canvas.height / 2;
+	this.scale = Math.min(this.c.canvas.width / 2.0, this.c.canvas.height / 2.0);
+	this.setSkin(skin);
+	this.needsRedraw = true;
+}
 
 StereographicRenderer.prototype.setSkin = function(skin) {
 	switch (skin) {
@@ -52,6 +64,7 @@ StereographicRenderer.prototype.setSkin = function(skin) {
 	}
 	this.c.strokeStyle = this.skin.lineColor;
 	this.c.fillStyle = this.skin.lineColor;
+	this.c.textAlign = "center";
 	this.updateLineWidth();
 }; 
 
@@ -66,21 +79,17 @@ StereographicRenderer.prototype.updateLineWidth = function() {
 StereographicRenderer.prototype.circle = function(center, radius) {
 	var diameterEndpoint1 = new SphereVector();
 	var diameterEndpoint2 = new SphereVector();
-	//console.log("Center (sphere): " + this.sv1.toString() + ", radius: " + radius);
 	diameterEndpoint1.set(center);
 	diameterEndpoint2.set(center)
 	diameterEndpoint1.move(0, radius);
 	diameterEndpoint2.move(0, -radius);
-	//console.log("Diametric points (sphere): " + this.sv1.toString() + " and " + this.sv2.toString());
 
 	var planarEndpoint1 = diameterEndpoint1.project();
 	var planarEndpoint2 = diameterEndpoint2.project();
-	//console.log("Diametric points (plane): " + v1.toString() + " and " + v2.toString());
 	var center = new Vector2(
 		(planarEndpoint1.x + planarEndpoint2.x) / 2,
 		(planarEndpoint1.y + planarEndpoint2.y) / 2
 	);
-	//console.log("Center (plane): " + this.v1.toString());
 	this.planarCircle(center.x, center.y, center.distance(planarEndpoint1));
 };
 
@@ -153,6 +162,11 @@ StereographicRenderer.prototype.pointLarge = function(point) {
 	this.planarPointLarge(planarPoint.x, planarPoint.y);
 };
 
+StereographicRenderer.prototype.text = function(text, center, xoffset, yoffset) {
+	var planarCenter = center.project();
+	this.planarText(text, planarCenter.x, planarCenter.y, xoffset, yoffset);
+};
+
 StereographicRenderer.prototype.planarCircle = function(cx, cy, radius, filled) {
 	this.skin.planarArc(this.c, this.scale * cx + this.xoffset, this.scale * cy + this.yoffset, this.scale * radius, 0, TAU, filled);
 };
@@ -171,6 +185,10 @@ StereographicRenderer.prototype.planarPoint = function(x1, y1) {
 
 StereographicRenderer.prototype.planarPointLarge = function(x1, y1) {
 	this.planarCircle(x1, y1, StereographicRenderer.POINT_RADIUS_LARGE / this.scale, true);
+};
+
+StereographicRenderer.prototype.planarText = function(text, x, y, xoffset, yoffset) {
+	this.c.fillText(text, this.scale * x + this.xoffset + xoffset, this.scale * y + this.yoffset + yoffset);
 };
 
 StereographicRenderer.prototype.renderGlobe = function(meridians, tropics, rotationMatrix) {
@@ -192,6 +210,7 @@ StereographicRenderer.prototype.renderMaze = function(maze, rotationMatrix) {
 		var strokeStyle = this.c.strokeStyle;
 		this.c.strokeStyle = this.skin.globeStyle;
 		var lineWidth = this.c.lineWidth;
+		//In case we want to add scaling to the line width.
 		this.c.lineWidth = this.c.lineWidth * 1;
 		this.renderGlobe(maze.meridians, maze.tropics + 1, rotationMatrix);
 		this.c.strokeStyle = strokeStyle;
@@ -244,16 +263,64 @@ StereographicRenderer.prototype.renderMaze = function(maze, rotationMatrix) {
 	
 
 	//Draw player and goal.
+	this.c.fillStyle = this.skin.textColor;
+	this.c.strokeStyle = this.skin.textColor;
+
 	center.set(maze.playerPosition);
 	center.rotate(rotationMatrix);
 	this.pointLarge(center);
 	center.set(maze.northPole.position);
 	center.rotate(rotationMatrix);
-	this.point(center);
+	this.pointLarge(center);
+	/*
+	Uncomment for modulating circle at goal.
 	var goalCircleTime = (this.timer % this.GOAL_RADIUS_PERIOD) / this.GOAL_RADIUS_PERIOD;
 	goalCircleTime *= TAU;
 	var goalRadius = this.GOAL_RADIUS_MIN + Math.sin(goalCircleTime) * this.GOAL_RADIUS_DIFF;
-	this.circle(center, goalRadius);
+	this.circle(center, goalRadius);*/
+
+	//Draw text.
+
+	//Find the radius of the northernmost tropic (for scaling purposes).
+	var phiInterval = maze.phiInterval();
+	point1.set(center);
+	point1.move(0, phiInterval);
+	point2.set(center);
+	point2.move(0, -phiInterval);
+	var nTropicRadius = point1.project().distance(point2.project()) * this.scale;
+	//Determine text size.
+	var textSize = Math.clamp(
+		StereographicRenderer.FONT_SIZE_RADIUS_COEFF * nTropicRadius,
+		StereographicRenderer.MIN_FONT_SIZE,
+		StereographicRenderer.MAX_FONT_SIZE
+	);
+	this.c.font = textSize + "px " + this.skin.font;
+	//Determine vertical offset.
+	vertOffset = -StereographicRenderer.TEXT_VERT_OFFSET + 
+		StereographicRenderer.TEXT_OSC_AMPLITUDE * Math.sin(2 * PI * this.timer / StereographicRenderer.TEXT_OSC_PERIOD);
+	//Draw text.
+	this.text(Maze.GOAL_TEXT, center, 0, vertOffset);
+	
+	//Repeat for start text.
+	center.set(maze.southPole.position)
+	center.rotate(rotationMatrix);
+	point1.set(center);
+	point1.move(0, phiInterval);
+	point2.set(center);
+	point2.move(0, -phiInterval);
+	var sTropicRadius = point1.project().distance(point2.project()) * this.scale;
+	var textSize = Math.clamp(
+		StereographicRenderer.FONT_SIZE_RADIUS_COEFF * sTropicRadius,
+		StereographicRenderer.MIN_FONT_SIZE,
+		StereographicRenderer.MAX_FONT_SIZE
+	);
+	this.c.font = textSize + "px " + this.skin.font;
+	vertOffset = 3 * StereographicRenderer.TEXT_VERT_OFFSET + 
+		StereographicRenderer.TEXT_OSC_AMPLITUDE * Math.sin(2 * PI * this.timer / StereographicRenderer.TEXT_OSC_PERIOD);
+	this.text(Maze.START_TEXT, center, 0, vertOffset);
+
+	this.c.fillStyle = this.skin.lineColor;
+	this.c.strokeColor = this.skin.lineColor;
 };
 
 //"Light" skin
@@ -262,7 +329,10 @@ StereographicRenderer.lightSkin = {
 	"lineWidth": 3,
 	"backgroundColor": "#FFF",
 	"lineColor": "#000",
-	"drawGlobe": false
+	"textColor": "#00F",
+	"drawGlobe": false,
+	"font": "Bubble, monospace",
+	"textOscillation": 0
 };
 
 StereographicRenderer.lightSkin.update = function(delta, renderer) {};
@@ -287,7 +357,10 @@ StereographicRenderer.darkSkin = {
 	"lineWidth": 3,
 	"backgroundColor": "#000",
 	"lineColor": "#FFF",
-	"drawGlobe": false
+	"textColor": "#0FF",
+	"drawGlobe": false,
+	"font": "Bubble, monospace",
+	"textOscillation": 0
 };
 
 StereographicRenderer.darkSkin.update = function(delta, renderer) {};
@@ -312,18 +385,22 @@ StereographicRenderer.cyberSkin = {
 	"lineWidth": 3,
 	"backgroundColor": "#202020",
 	"lineColor": "#00ffbb",
+	"textColor": "#bb00ff",
 	"flashTimer": 0,
 	"glowTimer": 0,
-	"timeBetweenFlashes": 4,
+	"timeBetweenFlashes": 7.5,
 	"flashTime": 0.5,
 	"flashStyle": "linear",
 	"darkColor": "#00c0a0",
+	"darkTextColor": "#a000c0",
 	"glowColor": "#50ffdd",
+	"glowTextColor": "#aa40ff",
 	"glowPeriod": 1.5,
 	"lightColor": "#e6ffdd",
 	"flashing": true,
 	"renderGlobe": true,
 	"globeStyle": "#101010",
+	"font": "Bubble, monospace"
 };
 
 StereographicRenderer.cyberSkin.update = function(delta, renderer) {
@@ -342,7 +419,7 @@ StereographicRenderer.cyberSkin.update = function(delta, renderer) {
 	var glowPercentage = Math.pow(Math.sin(Math.PI * skin.glowTimer / skin.glowPeriod), 2);
 	//var glowPercentage = 0.5 * (1 + Math.sin(2 * Math.PI * skin.glowTimer / skin.glowPeriod));
 	var darkColor = ColorUtil.blendColors(skin.darkColor, skin.glowColor, glowPercentage);
-
+	skin.textColor = ColorUtil.blendColors(skin.darkTextColor, skin.glowTextColor, glowPercentage);
 
 	//Handle flash
 	skin.flashTimer += delta;
@@ -363,7 +440,7 @@ StereographicRenderer.cyberSkin.update = function(delta, renderer) {
 			flashPercentage = 0.1 + 0.9 * timerPercentage;
 		}
 		if (flashPercentage != 0) {
-			skin.lineColor.addColorStop(0, darkColor)
+			skin.lineColor.addColorStop(0, darkColor);
 		}
 		if (flashPercentage > 0.02) {
 			var innerDarkStop;
@@ -389,6 +466,9 @@ StereographicRenderer.cyberSkin.update = function(delta, renderer) {
 		skin.lineColor.addColorStop(0, darkColor);
 		skin.lineColor.addColorStop(1, darkColor);
 	}
+
+	//Uncomment to make the text the same color as the lines.
+	//skin.textColor = skin.lineColor;
 };
 
 StereographicRenderer.cyberSkin.planarArc = function(c, cx, cy, radius, angle1, angle2, filled) {
