@@ -23,6 +23,7 @@ StereographicRenderer.TEXT_OSC_PERIOD = 3;
 StereographicRenderer.MIN_FONT_SIZE = 20;
 StereographicRenderer.MAX_FONT_SIZE = 45;
 StereographicRenderer.FONT_SIZE_RADIUS_COEFF = 0.25;
+StereographicRenderer.VISIBLE_CANVAS_COEFF = 0.55;
 
 StereographicRenderer.prototype.update = function(delta) {
 	if (this.c.canvas.width != document.body.clientWidth ||
@@ -45,10 +46,13 @@ StereographicRenderer.prototype.updateCanvas = function() {
 	this.c.canvas.height = document.body.clientHeight;
 	this.xoffset = this.c.canvas.width / 2;
 	this.yoffset = this.c.canvas.height / 2;
-	this.scale = Math.min(this.c.canvas.width / 2.0, this.c.canvas.height / 2.0);
+	this.scale = Math.min(
+		this.c.canvas.width * (1 - StereographicRenderer.VISIBLE_CANVAS_COEFF),
+		this.c.canvas.height * (1 - StereographicRenderer.VISIBLE_CANVAS_COEFF)
+	);
 	this.setSkin(skin);
 	this.needsRedraw = true;
-}
+};
 
 StereographicRenderer.prototype.setSkin = function(skin) {
 	switch (skin) {

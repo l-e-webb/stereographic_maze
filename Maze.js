@@ -279,7 +279,7 @@ Maze.prototype.getNearestNode = function(sphereVector) {
 //Tropic rotation should be faster closer to the poles to maintain constant
 //linear velocity on the surface where the player is.
 Maze.prototype.getTropicRotationFactor = function() {
-	return 1 / Math.sqrt(Math.sin(this.playerPosition.phi));
+	return Math.min(1 / Math.sqrt(Math.sin(this.playerPosition.phi)), 3);
 };
 
 Maze.prototype.isWin = function() {
