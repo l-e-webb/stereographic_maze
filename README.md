@@ -10,14 +10,14 @@ In Stereographic Maze, our intrepid player (a dot) starts on the south pole (mar
 
 [Play online](https://l-e-webb.github.io/stereographic_maze) or clone the repository and open `index.html` in any modern browser. (Also available on [itch.io](https://tangledwebgames.itch.io/stereographic-maze).)
 
-*Controls:*​ arrow keys (the left and right arrow keys rotate the sphere along it's normal axis of rotation, moving you east or west. Up and down rotate the sphere along a perpendicular axis, moving your north or south)
+*Controls:*​ arrow keys (the left and right arrow keys rotate the sphere along it's normal axis of rotation, moving you east or west. Up and down rotate the sphere along a perpendicular axis, moving you north or south)
 
 ​*Goal:* ​reach the north pole. Your goal is shown to you when you start the game, and will always be "up" towards the top of the screen as you navigate the maze.
 
-​*Difficulty:* ​at lower difficulty, the maze is smaller (i.e. made up of fewer meridians and tropics), and there are more corridors, making it easier to navigate. At harder difficulties, the maze is larger (i.e. made up of more meridians and tropics), and there are fewer corridors. On "hard" mode, there are ​no loops​, so you cannot make any wrong turns.
+​*Difficulty:* ​at lower difficulty, the maze is smaller (i.e. made up of fewer meridians and tropics), making it easier to navigate. At harder difficulties, the maze is larger (i.e. made up of more meridians and tropics), and there are ​no loops​, so you cannot make any wrong turns.
 
 ​*Tip:* ​start by getting as far north (up) as possible. Try to find the equator (which will appear as a horizontal line when you are on it). From there, you will be able to see the north pole in the upper part of the screen, and you can try to determine the correct path through the northern hemisphere.
 
 ## License
 
-Created by [Louis Webb](https://tangledwebgames.itch.io) licensed under a [Artistic License 2.0](https://opensource.org/licenses/Artistic-2.0).
+Created by Ashlen ([Tangled Web Games](https://tangledwebgames.itch.io)) licensed under a [Artistic License 2.0](https://opensource.org/licenses/Artistic-2.0).
