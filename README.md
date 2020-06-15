@@ -10,7 +10,7 @@ In Stereographic Maze, our intrepid player (a dot) starts on the south pole (mar
 
 [Play online](https://l-e-webb.github.io/stereographic_maze) or clone the repository and open `index.html` in any modern browser. (Also available on [itch.io](https://tangledwebgames.itch.io/stereographic-maze).)
 
-*Controls:*​ arrow keys (the left and right arrow keys rotate the sphere along it's normal axis of rotation, moving you east or west. Up and down rotate the sphere along a perpendicular axis, moving you north or south)
+*Controls:* ​Arrow keys (The left and right arrow keys rotate the sphere along its normal axis of rotation, moving you east or west. Up and down rotate the sphere along a perpendicular axis, moving you north or south.)
 
 ​*Goal:* ​reach the north pole. Your goal is shown to you when you start the game, and will always be "up" towards the top of the screen as you navigate the maze.
 
