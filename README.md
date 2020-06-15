@@ -3,7 +3,7 @@
 ## About
 
 *Stereographic Maze* is part math visualization, part puzzle game. You are navigating a maze on the surface of a sphere, but the maze is being visualized on the screen via [stereographic projection](https://wikipedia.org/wiki/Stereographic_projection)---a method for mapping the surface of a sphere onto a flat plane. Imagine a globe with a 2D plane bisecting it at the equator. If you draw a line at any downward angle from the north pole, it will pass through the surface of the sphere once, and through the equatorial plane once.  Project each point on the sphere along that line onto the equatorial plane and you've got a stereographic projection. The southern hemisphere is projected upward into to a circle in the center of the plane, and the northern hemisphere is projected outward to the entire remainder of the plane. The north pole itself is lost in the infinite distance.
-    
+
 In Stereographic Maze, our intrepid player (a dot) starts on the south pole (marked by "START"), and must find its way through a maze to the north pole (marked by "GOAL"). The corridors of the maze are along tropics (east/west lines) and meridians (north/south lines)​. As you appear to move through the maze, you are actually staying in place and rotating the entire sphere. The goal of reaching the north pole is equivalent to rotating the sphere so that the original north pole moves all the way to the south pole.
 
 ## To Play
@@ -20,4 +20,4 @@ In Stereographic Maze, our intrepid player (a dot) starts on the south pole (mar
 
 ## License
 
-Created by Ashlen ([Tangled Web Games](https://tangledwebgames.itch.io)) licensed under a [Artistic License 2.0](https://opensource.org/licenses/Artistic-2.0).
+Created by Louis Webb ([Tangled Web Games](https://tangledwebgames.itch.io)) licensed under a [Artistic License 2.0](https://opensource.org/licenses/Artistic-2.0).
